@@ -24,7 +24,8 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
       const reminderDate = startOfToday(new Date(task.reminderDate));
       const dueDate = startOfToday(new Date(task.dueDate));
       
-      const shouldRemind = (isAfter(today, reminderDate) || isEqual(today, reminderDate)) && isBefore(today, dueDate);
+      // Show reminder if today is on or after the reminder date, but before the due date.
+      const shouldRemind = !isAfter(reminderDate, today) && isBefore(today, dueDate);
 
       return shouldRemind;
     });
