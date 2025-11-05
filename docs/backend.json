@@ -1,0 +1,132 @@
+{
+  "entities": {
+    "Task": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Task",
+      "type": "object",
+      "description": "Represents a task within the TaskFlow application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the task."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the task."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the task, supports rich text formatting."
+        },
+        "priority": {
+          "type": "string",
+          "description": "Priority level of the task (P0, P1, P2, P3).",
+          "format": "string"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Due date for the task.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the task (Yet to Start, WIP, In Review, Done)."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "priority",
+        "dueDate",
+        "status"
+      ]
+    },
+    "StatusHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StatusHistory",
+      "type": "object",
+      "description": "Represents the history of status changes for a task.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the status history entry."
+        },
+        "taskId": {
+          "type": "string",
+          "description": "Reference to the Task entity. (Relationship: Task 1:N StatusHistory)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The status that the task was changed to."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the status was changed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "taskId",
+        "status",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/tasks/{taskId}",
+        "definition": {
+          "entityName": "Task",
+          "schema": {
+            "$ref": "#/backend/entities/Task"
+          },
+          "description": "Stores task information for a specific user. Path-based ownership is enforced through the `userId` parameter.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the task."
+            },
+            {
+              "name": "taskId",
+              "description": "The ID of the task."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/tasks/{taskId}/statusHistory/{statusHistoryId}",
+        "definition": {
+          "entityName": "StatusHistory",
+          "schema": {
+            "$ref": "#/backend/entities/StatusHistory"
+          },
+          "description": "Stores the status history for a particular task. The nested path enforces ownership via `userId` and `taskId`.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the task."
+            },
+            {
+              "name": "taskId",
+              "description": "The ID of the parent task."
+            },
+            {
+              "name": "statusHistoryId",
+              "description": "The ID of the status history entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to provide a secure and scalable solution for the TaskFlow application, adhering to the principles of Authorization Independence, Clarity of Intent, DBAC, and QAPs.\n\n**Authorization Independence:** Tasks and their status histories are owned by individual users. The structure leverages path-based ownership (`/users/{userId}/tasks/{taskId}`) to enforce security. No `get()` calls are required in the security rules as authorization context is derived directly from the path. The `userId` is implicitly the owner, providing Authorization Independence.\n\n**Structural Segregation:** Tasks are segregated by user ID, ensuring that each user's tasks have the same security posture.\n\n**Access Modeling:** Path-based ownership is used for private data (tasks owned by a specific user).\n\n**QAPs:** List operations are secured by scoping tasks to the user's ID. A user can only list tasks under their own `/users/{userId}/tasks` path, making rules simple and secure.\n\nThe structure facilitates easy debugging due to its clear and explicit path-based ownership and avoids complex rule logic by denormalizing ownership through path structure."
+  }
+}
