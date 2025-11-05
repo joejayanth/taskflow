@@ -8,6 +8,7 @@ import { DndContext, type DragEndEvent, DragOverlay, DragStartEvent, PointerSens
 import { AppHeader } from '@/components/app-header';
 import { TaskBoard } from '@/components/task-board';
 import { FocusRecommendation } from '@/components/focus-recommendation';
+import { Reminders } from '@/components/reminders';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -53,7 +54,8 @@ export default function Home() {
     return tasks.map(task => ({
       ...task,
       dueDate: new Date(task.dueDate),
-      history: task.history.map(h => ({...h, timestamp: new Date(h.timestamp)}))
+      history: task.history.map(h => ({...h, timestamp: new Date(h.timestamp)})),
+      reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
     }));
   }, [tasks]);
 
@@ -94,11 +96,20 @@ export default function Home() {
     const taskForFirestore = {
       ...updatedTask,
       dueDate: updatedTask.dueDate.toISOString(),
+      reminderDate: updatedTask.reminderDate ? updatedTask.reminderDate.toISOString() : null,
       history: updatedTask.history.map(h => ({
         ...h,
         timestamp: h.timestamp.toISOString()
       }))
     };
+    
+    // In Firestore, if you want to remove a field, you should set it to `null` 
+    // or use the `deleteField()` sentinel value if you're doing an `updateDoc`.
+    // Since we use `setDoc` with `merge: true`, we need to be explicit about fields we want to remove.
+    if (!taskForFirestore.reminderDate) {
+      // @ts-ignore
+      taskForFirestore.reminderDate = null;
+    }
     
     setDocumentNonBlocking(taskRef, taskForFirestore, { merge: true });
   };
@@ -160,7 +171,10 @@ export default function Home() {
       <AppHeader onTaskCreate={handleTaskUpdate} />
       <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
-          <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+            <Reminders tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+          </div>
            {isClient ? (
             <DndContext 
               sensors={sensors}

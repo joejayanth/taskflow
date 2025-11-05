@@ -57,6 +57,11 @@
         "blocked": {
             "type": "boolean",
             "description": "Indicates if the task is blocked."
+        },
+        "reminderDate": {
+          "type": "string",
+          "description": "Optional date to start reminding the user about the task.",
+          "format": "date-time"
         }
       },
       "required": [

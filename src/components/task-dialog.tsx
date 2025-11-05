@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, History, Pencil } from 'lucide-react';
+import { Calendar as CalendarIcon, History, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Task, Status } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogClose,
+  DialogPortal,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -53,6 +55,7 @@ const taskSchema = z.object({
   dueDate: z.date({ required_error: 'A due date is required.' }),
   status: z.enum(['Yet to Start', 'WIP', 'In Review', 'Done']),
   blocked: z.boolean().optional(),
+  reminderDate: z.date().optional(),
 });
 
 interface TaskDialogProps {
@@ -105,6 +108,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
       dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
       status: initialStatus || task?.status || 'Yet to Start',
       blocked: task?.blocked || false,
+      reminderDate: task?.reminderDate ? new Date(task.reminderDate) : undefined,
     },
   });
 
@@ -117,6 +121,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: new Date(task.dueDate),
         status: task.status,
         blocked: task.blocked,
+        reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
       });
     } else {
       form.reset({
@@ -126,6 +131,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: new Date(),
         status: initialStatus || 'Yet to Start',
         blocked: false,
+        reminderDate: undefined,
       });
     }
   }, [task, form, initialStatus]);
@@ -135,6 +141,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
       id: task?.id || crypto.randomUUID(),
       ...values,
       dueDate: values.dueDate,
+      reminderDate: values.reminderDate,
       history: task ? (task.status !== values.status ? [...task.history, {status: values.status, timestamp: new Date()}] : task.history) : [{status: values.status, timestamp: new Date()}],
     };
     onSave(newOrUpdatedTask);
@@ -152,6 +159,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: new Date(),
         status: initialStatus || 'Yet to Start',
         blocked: false,
+        reminderDate: undefined,
       } : {
         title: task?.title,
         description: task?.description,
@@ -159,6 +167,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
         blocked: task?.blocked,
+        reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
       });
     }
   }
@@ -175,6 +184,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
         blocked: task?.blocked,
+        reminderDate: task?.reminderDate ? new Date(task.reminderDate) : undefined,
       });
     }
   }
@@ -339,6 +349,55 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
                             </FormItem>
                         )}
                         />
+                      <FormField
+                        control={form.control}
+                        name="reminderDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Reminder Date</FormLabel>
+                            <div className="flex items-center gap-2">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant={'outline'}
+                                      className={cn(
+                                        'w-full pl-3 text-left font-normal',
+                                        !field.value && 'text-muted-foreground'
+                                      )}
+                                    >
+                                      {field.value ? (
+                                        format(field.value, 'PPP')
+                                      ) : (
+                                        <span>Set a reminder</span>
+                                      )}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              {field.value && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => field.onChange(undefined)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </>
                  ) : (
                     <>
@@ -350,6 +409,11 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
                             <div><span className="font-semibold">Priority:</span> {getPriorityLabel(task?.priority)}</div>
                             <div><span className="font-semibold">Due:</span> {task && format(new Date(task.dueDate), 'PPP')}</div>
                         </div>
+                        {task?.reminderDate && (
+                            <div className="text-sm">
+                                <span className="font-semibold">Reminder:</span> {format(new Date(task.reminderDate), 'PPP')}
+                            </div>
+                        )}
                          {task?.blocked && (
                             <div className="text-sm font-semibold text-destructive">
                                 This task is marked as blocked.
@@ -383,5 +447,3 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
     </Dialog>
   );
 }
-
-    

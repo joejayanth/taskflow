@@ -15,4 +15,5 @@ export interface Task {
   status: Status;
   history: StatusUpdate[];
   blocked?: boolean;
+  reminderDate?: Date;
 }
