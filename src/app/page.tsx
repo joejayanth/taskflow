@@ -4,13 +4,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Task, Status, Priority } from '@/lib/types';
-import { DndContext, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { AppHeader } from '@/components/app-header';
 import { TaskBoard } from '@/components/task-board';
 import { FocusRecommendation } from '@/components/focus-recommendation';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { TaskCard } from '@/components/task-card';
 
 const statuses: Status[] = ['Yet to Start', 'WIP', 'In Review', 'Done'];
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
@@ -27,6 +28,15 @@ export default function Home() {
   
   const { data: tasks, isLoading: areTasksLoading } = useCollection<Omit<Task, 'id'>>(tasksQuery);
   const [isClient, setIsClient] = useState(false);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -89,8 +99,17 @@ export default function Home() {
     
     setDocumentNonBlocking(taskRef, taskForFirestore, { merge: true });
   };
+  
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const task = tasksWithDateObjects.find(t => t.id === active.id);
+    if (task) {
+      setActiveTask(task as Task);
+    }
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveTask(null);
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const taskId = active.id as string;
@@ -106,6 +125,10 @@ export default function Home() {
         handleTaskUpdate(updatedTask);
       }
     }
+  };
+  
+  const handleDragCancel = () => {
+    setActiveTask(null);
   };
 
   if (isUserLoading || areTasksLoading || !user) {
@@ -123,8 +146,16 @@ export default function Home() {
         <div className="mx-auto max-w-7xl space-y-6">
           <FocusRecommendation tasks={tasksWithDateObjects as Task[]} />
            {isClient ? (
-            <DndContext onDragEnd={handleDragEnd}>
+            <DndContext 
+              sensors={sensors}
+              onDragStart={handleDragStart} 
+              onDragEnd={handleDragEnd} 
+              onDragCancel={handleDragCancel}
+            >
               <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} />
+               <DragOverlay>
+                {activeTask ? <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay /> : null}
+              </DragOverlay>
             </DndContext>
           ) : (
             <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} />

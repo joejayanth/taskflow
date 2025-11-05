@@ -1,7 +1,7 @@
 
+
 "use client";
 
-import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -12,13 +12,15 @@ import { PriorityIcon, getPriorityLabel } from './priority-icon';
 import { GripVertical } from 'lucide-react';
 import { Button } from './ui/button';
 import { useSortable } from '@dnd-kit/sortable';
+import { cn } from '@/lib/utils';
 
 interface TaskCardProps {
   task: Task;
   onTaskUpdate: (task: Task) => void;
+  isOverlay?: boolean;
 }
 
-export function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
+export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -26,22 +28,20 @@ export function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id });
+  } = useSortable({ id: task.id, data: {type: 'Task', task} });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 10 : 'auto',
-    opacity: isDragging ? 0.5 : 1,
   };
 
   const dueDate = new Date(task.dueDate);
   const isOverdue = isPast(dueDate) && task.status !== 'Done';
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes} className={cn(isOverlay && "ring-2 ring-primary")}>
       <TaskDialog onSave={onTaskUpdate} task={task} trigger={
-        <Card className="mb-4 hover:shadow-md transition-shadow duration-200 group">
+        <Card className={cn("mb-4 hover:shadow-md transition-shadow duration-200 group", isDragging && "opacity-50")}>
           <CardHeader className="p-4 pb-2">
              <div className="flex items-start justify-between">
                 <CardTitle className="text-base font-semibold leading-tight pr-4 cursor-pointer">{task.title}</CardTitle>

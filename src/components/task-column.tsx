@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useDroppable } from '@dnd-kit/core';
@@ -5,6 +6,7 @@ import type { Task, Status } from '@/lib/types';
 import { TaskCard } from './task-card';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 interface TaskColumnProps {
   status: Status;
@@ -23,15 +25,19 @@ const statusConfig: Record<Status, { color: string, title: string }> = {
 export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: status,
+    data: {
+      type: 'Column',
+      status: status,
+    }
   });
 
   const config = statusConfig[status];
+  const taskIds = tasks.map(t => t.id);
 
   return (
     <div
-      ref={setNodeRef}
       className={cn(
-        'flex h-[70vh] flex-col rounded-lg bg-card shadow-sm transition-colors',
+        'flex flex-col rounded-lg bg-card shadow-sm border',
         isOver ? 'border-primary border-2' : 'border'
       )}
     >
@@ -41,14 +47,16 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
         <span className="ml-2 text-sm text-muted-foreground">{tasks.length}</span>
       </div>
       <ScrollArea className="flex-1">
-        <div className="p-4">
-          {tasks.length > 0 ? (
-            tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate}/>)
-          ) : (
-            <div className="flex h-40 items-center justify-center rounded-md border-2 border-dashed border-border">
-              <p className="text-sm text-muted-foreground">Drop tasks here</p>
-            </div>
-          )}
+        <div ref={setNodeRef} className="p-4 min-h-[400px]">
+          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            {tasks.length > 0 ? (
+              tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate}/>)
+            ) : (
+              <div className="flex h-40 items-center justify-center rounded-md border-2 border-dashed border-border">
+                <p className="text-sm text-muted-foreground">Drop tasks here</p>
+              </div>
+            )}
+          </SortableContext>
         </div>
       </ScrollArea>
     </div>
