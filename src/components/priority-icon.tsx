@@ -10,8 +10,13 @@ const priorityConfig: Record<Priority, { Icon: React.ElementType; style: React.C
 };
 
 export function PriorityIcon({ priority, className, ...props }: { priority: Priority } & LucideProps) {
-  const { Icon, style } = priorityConfig[priority];
+  const config = priorityConfig[priority];
+  if (!config) return null;
+  const { Icon, style } = config;
   return <Icon style={style} className={cn(className)} {...props} />;
 }
 
-export const getPriorityLabel = (priority: Priority) => priorityConfig[priority].label;
+export const getPriorityLabel = (priority?: Priority) => {
+    if (!priority) return '';
+    return priorityConfig[priority].label;
+}

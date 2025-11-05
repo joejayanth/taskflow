@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog';
@@ -43,6 +42,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from './ui/separator';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -81,7 +81,16 @@ const linkify = (text: string) => {
 
 export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(!task);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const isNewTask = !task;
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsEditing(isNewTask);
+    }
+  }, [isOpen, isNewTask]);
+
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
@@ -102,23 +111,15 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
       history: task ? (task.status !== values.status ? [...task.history, {status: values.status, timestamp: new Date()}] : task.history) : [{status: values.status, timestamp: new Date()}],
     };
     onSave(newOrUpdatedTask);
-    setIsEditing(false);
-    setIsOpen(false);
-    if (!task) {
-      form.reset({
-        title: '',
-        description: '',
-        priority: 'P2',
-        dueDate: new Date(),
-        status: 'Yet to Start',
-      });
+    if (!isNewTask) {
+        setIsEditing(false);
     }
+    setIsOpen(false);
   };
   
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      setIsEditing(!task); // Reset editing state on close
       form.reset(task ? {
         title: task.title,
         description: task.description,
@@ -135,6 +136,21 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
     }
   }
 
+  const handleCancel = () => {
+    if (isNewTask) {
+      setIsOpen(false);
+    } else {
+      setIsEditing(false);
+      form.reset({
+        title: task?.title,
+        description: task?.description,
+        priority: task?.priority,
+        dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
+        status: task?.status,
+      });
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -142,7 +158,6 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <DialogHeader>
-              <DialogTitle>
                 {isEditing ? (
                   <FormField
                       control={form.control}
@@ -150,21 +165,25 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                              <Input placeholder="Task Title" {...field} className="text-lg font-bold border-0 shadow-none px-0 focus-visible:ring-0" />
+                            <DialogTitle asChild>
+                              <Input placeholder="Task Title" {...field} className="text-2xl font-bold border-0 shadow-none px-0 focus-visible:ring-0" />
+                            </DialogTitle>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                 ) : (
-                  <div className="flex items-center justify-between">
+                  <DialogTitle className="flex items-center justify-between pr-8">
                       <span className="text-2xl">{task?.title}</span>
                       <Button type="button" variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
                           <Pencil className="h-5 w-5" />
                       </Button>
-                  </div>
+                  </DialogTitle>
                 )}
-              </DialogTitle>
+                 <VisuallyHidden>
+                  <DialogTitle>{task?.title || 'New Task'}</DialogTitle>
+                </VisuallyHidden>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -280,7 +299,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{task?.description ? linkify(task.description) : 'No description provided.'}</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div><span className="font-semibold">Status:</span> {task?.status}</div>
-                            <div><span className="font-semibold">Priority:</span> {task?.priority}</div>
+                            <div><span className="font-semibold">Priority:</span> {getPriorityLabel(task.priority)}</div>
                             <div><span className="font-semibold">Due:</span> {task && format(new Date(task.dueDate), 'PPP')}</div>
                         </div>
                     </>
@@ -292,7 +311,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     <h4 className="flex items-center gap-2 text-sm font-semibold"><History className="h-4 w-4"/> Status History</h4>
                     <Separator />
                     <ul className="space-y-1 text-xs text-muted-foreground">
-                        {task.history.map((h, i) => (
+                        {task.history.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((h, i) => (
                             <li key={i}>{format(new Date(h.timestamp), 'MMM d, yyyy, h:mm a')}: Status changed to <strong>{h.status}</strong></li>
                         ))}
                     </ul>
@@ -301,9 +320,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
 
             {isEditing && (
               <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">Cancel</Button>
-                </DialogClose>
+                  <Button type="button" variant="secondary" onClick={handleCancel}>Cancel</Button>
                 <Button type="submit">Save</Button>
               </DialogFooter>
             )}
