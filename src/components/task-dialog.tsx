@@ -180,7 +180,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange} modal={false}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent 
         className="sm:max-w-[625px]"
