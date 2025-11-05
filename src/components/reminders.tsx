@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import type { Task } from "@/lib/types";
 import { BellRing, CalendarClock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, isAfter, isBefore, startOfToday } from "date-fns";
+import { format, isAfter, isBefore, startOfToday, isEqual } from "date-fns";
 import { TaskDialog } from "./task-dialog";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -21,9 +21,12 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
       if (task.status === 'Done' || !task.reminderDate) {
         return false;
       }
-      const reminderDate = new Date(task.reminderDate);
-      const dueDate = new Date(task.dueDate);
-      return isAfter(today, reminderDate) && isBefore(today, dueDate);
+      const reminderDate = startOfToday(new Date(task.reminderDate));
+      const dueDate = startOfToday(new Date(task.dueDate));
+      
+      const shouldRemind = (isAfter(today, reminderDate) || isEqual(today, reminderDate)) && isBefore(today, dueDate);
+
+      return shouldRemind;
     });
   }, [tasks]);
 
