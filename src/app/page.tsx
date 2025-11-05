@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Task, Status } from '@/lib/types';
 import { DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { AppHeader } from '@/components/app-header';
@@ -12,6 +12,11 @@ const statuses: Status[] = ['Yet to Start', 'WIP', 'In Review', 'Done'];
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const tasksByStatus = useMemo(() => {
     const grouped: { [key in Status]: Task[] } = {
@@ -63,9 +68,11 @@ export default function Home() {
       <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
           <FocusRecommendation tasks={tasks} />
-          <DndContext onDragEnd={handleDragEnd}>
-            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} />
-          </DndContext>
+          {isClient && (
+            <DndContext onDragEnd={handleDragEnd}>
+              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} />
+            </DndContext>
+          )}
         </div>
       </main>
     </div>
