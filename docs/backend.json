@@ -1,5 +1,25 @@
 {
   "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's public profile.",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "URL of the user's profile picture."
+        }
+      },
+      "required": ["displayName", "email", "photoURL"]
+    },
     "Task": {
       "title": "Task",
       "type": "object",
@@ -64,10 +84,16 @@
   },
   "auth": {
     "providers": [
-      "anonymous"
+      "google.com"
     ]
   },
   "firestore": {
+    "/users/{userId}": {
+        "schema": {
+            "$ref": "#/entities/UserProfile"
+        },
+        "description": "Stores public profile information for a user."
+    },
     "/users/{userId}/tasks/{taskId}": {
       "schema": {
         "$ref": "#/entities/Task"

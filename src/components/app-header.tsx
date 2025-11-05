@@ -4,6 +4,7 @@ import { CircleCheck, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskDialog } from "@/components/task-dialog";
 import type { Task } from "@/lib/types";
+import { UserProfile } from "./user-profile";
 
 interface AppHeaderProps {
   onTaskCreate: (task: Task) => void;
@@ -17,12 +18,15 @@ export function AppHeader({ onTaskCreate }: AppHeaderProps) {
           <CircleCheck className="h-7 w-7 text-primary" />
           <h1 className="text-xl font-bold">TaskFlow</h1>
         </div>
-        <TaskDialog onSave={onTaskCreate} trigger={
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Task
-          </Button>
-        } />
+        <div className="flex items-center gap-4">
+          <TaskDialog onSave={onTaskCreate} trigger={
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Task
+            </Button>
+          } />
+          <UserProfile />
+        </div>
       </div>
     </header>
   );
