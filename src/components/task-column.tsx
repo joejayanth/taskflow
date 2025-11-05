@@ -7,6 +7,9 @@ import { TaskCard } from './task-card';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Button } from './ui/button';
+import { Plus } from 'lucide-react';
+import { TaskDialog } from './task-dialog';
 
 interface TaskColumnProps {
   status: Status;
@@ -59,6 +62,18 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
           </SortableContext>
         </div>
       </ScrollArea>
+      <div className="border-t p-2">
+        <TaskDialog
+            onSave={onTaskUpdate}
+            initialStatus={status}
+            trigger={
+                <Button variant="ghost" className="w-full justify-start">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add a task
+                </Button>
+            }
+        />
+      </div>
     </div>
   );
 }

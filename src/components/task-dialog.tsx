@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -7,7 +8,7 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, History, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Task } from '@/lib/types';
+import type { Task, Status } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -58,6 +59,7 @@ interface TaskDialogProps {
   task?: Task;
   trigger: React.ReactNode;
   onSave: (task: Task) => void;
+  initialStatus?: Status;
 }
 
 const linkify = (text: string) => {
@@ -81,7 +83,7 @@ const linkify = (text: string) => {
     })}</div>;
 };
 
-export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
+export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(!task);
 
@@ -101,7 +103,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
       description: task?.description || '',
       priority: task?.priority || 'P2',
       dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
-      status: task?.status || 'Yet to Start',
+      status: initialStatus || task?.status || 'Yet to Start',
       blocked: task?.blocked || false,
     },
   });
@@ -122,11 +124,11 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         description: '',
         priority: 'P2',
         dueDate: new Date(),
-        status: 'Yet to Start',
+        status: initialStatus || 'Yet to Start',
         blocked: false,
       });
     }
-  }, [task, form]);
+  }, [task, form, initialStatus]);
 
   const onSubmit = (values: z.infer<typeof taskSchema>) => {
     const newOrUpdatedTask: Task = {
@@ -148,7 +150,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         description: '',
         priority: 'P2',
         dueDate: new Date(),
-        status: 'Yet to Start',
+        status: initialStatus || 'Yet to Start',
         blocked: false,
       } : {
         title: task?.title,
