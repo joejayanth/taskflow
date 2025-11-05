@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-  DialogPortal,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -183,7 +182,10 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent 
+        className="sm:max-w-[625px]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <DialogHeader>
@@ -304,17 +306,15 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
-                                  <DialogPortal>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                      <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={field.onChange}
-                                        disabled={(date) => date < new Date('1900-01-01')}
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </DialogPortal>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={field.value}
+                                      onSelect={field.onChange}
+                                      disabled={(date) => date < new Date('1900-01-01')}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
                                 </Popover>
                               <FormMessage />
                             </FormItem>
@@ -383,3 +383,5 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
     </Dialog>
   );
 }
+
+    
