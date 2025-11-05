@@ -44,10 +44,21 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
         isOver ? 'border-primary border-2' : 'border'
       )}
     >
-      <div className="flex items-center gap-2 border-b p-4">
-        <span className={cn('h-2.5 w-2.5 rounded-full', config.color)} />
-        <h2 className="font-semibold">{config.title}</h2>
-        <span className="ml-2 text-sm text-muted-foreground">{tasks.length}</span>
+      <div className="flex items-center justify-between gap-2 border-b p-4">
+        <div className="flex items-center gap-2">
+            <span className={cn('h-2.5 w-2.5 rounded-full', config.color)} />
+            <h2 className="font-semibold">{config.title}</h2>
+            <span className="text-sm text-muted-foreground">{tasks.length}</span>
+        </div>
+        <TaskDialog
+            onSave={onTaskUpdate}
+            initialStatus={status}
+            trigger={
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Plus className="h-4 w-4" />
+                </Button>
+            }
+        />
       </div>
       <ScrollArea className="flex-1">
         <div ref={setNodeRef} className="p-4 min-h-[400px]">
@@ -62,18 +73,6 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
           </SortableContext>
         </div>
       </ScrollArea>
-      <div className="border-t p-2">
-        <TaskDialog
-            onSave={onTaskUpdate}
-            initialStatus={status}
-            trigger={
-                <Button variant="ghost" className="w-full justify-start">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add a task
-                </Button>
-            }
-        />
-      </div>
     </div>
   );
 }
