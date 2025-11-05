@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -120,27 +121,29 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <DialogHeader>
-              {isEditing ? (
-                 <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                            <Input placeholder="Task Title" {...field} className="text-lg font-bold border-0 shadow-none px-0 focus-visible:ring-0" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-              ) : (
-                <DialogTitle className="flex items-center justify-between">
-                    <span className="text-2xl">{task?.title}</span>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
-                        <Pencil className="h-5 w-5" />
-                    </Button>
-                </DialogTitle>
-              )}
+              <DialogTitle>
+                {isEditing ? (
+                  <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                              <Input placeholder="Task Title" {...field} className="text-lg font-bold border-0 shadow-none px-0 focus-visible:ring-0" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                ) : (
+                  <div className="flex items-center justify-between">
+                      <span className="text-2xl">{task?.title}</span>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
+                          <Pencil className="h-5 w-5" />
+                      </Button>
+                  </div>
+                )}
+              </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
