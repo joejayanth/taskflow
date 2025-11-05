@@ -41,8 +41,8 @@ export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
   return (
     <div ref={setNodeRef} style={style} {...attributes} className={cn(isOverlay && "ring-2 ring-primary")}>
       <TaskDialog onSave={onTaskUpdate} task={task} trigger={
-        <Card className={cn("mb-4 hover:shadow-md transition-shadow duration-200 group", isDragging && "opacity-50")}>
-          <CardHeader className="p-4 pb-2">
+        <Card className={cn("mb-3 hover:shadow-md transition-shadow duration-200 group rounded-md", isDragging && "opacity-50")}>
+          <CardHeader className="p-3 pb-1">
              <div className="flex items-start justify-between">
                 <CardTitle className="text-base font-semibold leading-tight pr-4 cursor-pointer">{task.title}</CardTitle>
                 <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab active:cursor-grabbing shrink-0" {...listeners} onClick={(e) => e.stopPropagation()}>
@@ -50,7 +50,7 @@ export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
                 </Button>
             </div>
           </CardHeader>
-          <CardContent className="flex items-center justify-between p-4 pt-2 text-sm cursor-pointer">
+          <CardContent className="flex items-center justify-between p-3 pt-1 text-sm cursor-pointer">
             <div className="flex items-center gap-2 text-muted-foreground">
               <PriorityIcon priority={task.priority} className="h-4 w-4" />
               <span>{getPriorityLabel(task.priority)}</span>
