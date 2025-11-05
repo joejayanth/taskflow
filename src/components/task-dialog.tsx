@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, History, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Task, Priority, Status } from '@/lib/types';
+import type { Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -89,7 +89,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
       title: task?.title || '',
       description: task?.description || '',
       priority: task?.priority || 'P2',
-      dueDate: task?.dueDate || new Date(),
+      dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
       status: task?.status || 'Yet to Start',
     },
   });
@@ -98,6 +98,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
     const newOrUpdatedTask: Task = {
       id: task?.id || crypto.randomUUID(),
       ...values,
+      dueDate: values.dueDate,
       history: task ? (task.status !== values.status ? [...task.history, {status: values.status, timestamp: new Date()}] : task.history) : [{status: values.status, timestamp: new Date()}],
     };
     onSave(newOrUpdatedTask);
@@ -122,7 +123,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         title: task.title,
         description: task.description,
         priority: task.priority,
-        dueDate: task.dueDate,
+        dueDate: new Date(task.dueDate),
         status: task.status,
       } : {
         title: '',
@@ -280,7 +281,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div><span className="font-semibold">Status:</span> {task?.status}</div>
                             <div><span className="font-semibold">Priority:</span> {task?.priority}</div>
-                            <div><span className="font-semibold">Due:</span> {task && format(task.dueDate, 'PPP')}</div>
+                            <div><span className="font-semibold">Due:</span> {task && format(new Date(task.dueDate), 'PPP')}</div>
                         </div>
                     </>
                  )}
@@ -292,7 +293,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     <Separator />
                     <ul className="space-y-1 text-xs text-muted-foreground">
                         {task.history.map((h, i) => (
-                            <li key={i}>{format(h.timestamp, 'MMM d, yyyy, h:mm a')}: Status changed to <strong>{h.status}</strong></li>
+                            <li key={i}>{format(new Date(h.timestamp), 'MMM d, yyyy, h:mm a')}: Status changed to <strong>{h.status}</strong></li>
                         ))}
                     </ul>
                 </div>

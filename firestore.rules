@@ -1,118 +1,26 @@
-/**
- * @fileoverview Firestore Security Rules for the TaskFlow application.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model. Each user has full control
- * over their own tasks and task status histories, and no access to others' data.
- *
- * Data Structure:
- * All data is nested under /users/{userId}, ensuring clear ownership.  Tasks are
- * stored at /users/{userId}/tasks/{taskId}, and task status histories are stored
- * at /users/{userId}/tasks/{taskId}/statusHistory/{statusHistoryId}.
- *
- * Key Security Decisions:
- * - Users can only access data under their own user ID.
- * - Listing other users' tasks or status histories is explicitly denied.
- * - Data consistency between the path and document data is enforced on create
- *   and update operations to prevent unauthorized data access.
- *
- * Denormalization for Authorization:
- * The path-based structure inherently denormalizes the user ID, making authorization
- * checks simple and efficient. Rules can directly use the {userId} path parameter
- * to validate ownership without needing to read any document data.
- */
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Controls access to task documents.
-     * @path /users/{userId}/tasks/{taskId}
-     * @allow (create) Authenticated user with matching userId can create a new task.
-     * @allow (get, list, update, delete) Authenticated user with matching userId can read, update, or delete their own task.
-     * @deny (create) Authenticated user with mismatched userId cannot create a task.
-     * @deny (get, list, update, delete) Authenticated user with mismatched userId cannot read, update, or delete the task.
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/tasks/{taskId} {
-      // isSignedIn() returns true if the user is signed in.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // isOwner(userId) returns true if the request is made by the owner (userId).
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      // isExistingOwner(userId) returns true if the user is signed in and owns the resource.
-      function isExistingOwner(userId) {
-        return isSignedIn() && isOwner(userId) && resource != null;
-      }
-
-      // Allow a user to create a task if they are signed in and the userId matches.
-      allow create: if isSignedIn()
-                      && isOwner(userId)
-                      && request.resource.data.id == taskId;
-
-      // Allow a user to get their own task.
-      allow get: if isOwner(userId);
-
-      // Allow a user to list their own tasks.
-      allow list: if isOwner(userId);
-
-      // Allow a user to update their own task if it exists. Enforce immutability of the id field
-      allow update: if isExistingOwner(userId)
-                       && request.resource.data.id == resource.data.id;
-
-      // Allow a user to delete their own task if it exists.
-      allow delete: if isExistingOwner(userId);
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    /**
-     * @description Controls access to status history documents.
-     * @path /users/{userId}/tasks/{taskId}/statusHistory/{statusHistoryId}
-     * @allow (create) Authenticated user with matching userId can create a new status history entry.
-     * @allow (get, list, update, delete) Authenticated user with matching userId can read, update, or delete their own status history entry.
-     * @deny (create) Authenticated user with mismatched userId cannot create a status history entry.
-     * @deny (get, list, update, delete) Authenticated user with mismatched userId cannot read, update, or delete the status history entry.
-     * @principle Enforces document ownership and relational integrity for all operations.
-     */
-    match /users/{userId}/tasks/{taskId}/statusHistory/{statusHistoryId} {
-      // isSignedIn() returns true if the user is signed in.
-      function isSignedIn() {
-        return request.auth != null;
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Rules for the 'users' collection
+    match /users/{userId} {
+      // Users can only access their own user document
+      allow read, write: if isOwner(userId);
+
+      // Rules for the 'tasks' subcollection
+      match /tasks/{taskId} {
+        // Users can create, read, list, update, and delete their own tasks
+        allow read, write: if isOwner(userId);
       }
-
-      // isOwner(userId) returns true if the request is made by the owner (userId).
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      // isExistingOwner(userId) returns true if the user is signed in and owns the resource.
-      function isExistingOwner(userId) {
-        return isSignedIn() && isOwner(userId) && resource != null;
-      }
-
-      // Allow a user to create a statusHistory if they are signed in and the userId matches.
-      allow create: if isSignedIn()
-                      && isOwner(userId)
-                      && request.resource.data.taskId == taskId
-                      && request.resource.data.id == statusHistoryId;
-
-      // Allow a user to get their own statusHistory.
-      allow get: if isOwner(userId);
-
-      // Allow a user to list their own statusHistory entries.
-      allow list: if isOwner(userId);
-
-      // Allow a user to update their own statusHistory if it exists. Enforce immutability of the id field.
-      allow update: if isExistingOwner(userId)
-                       && request.resource.data.id == resource.data.id
-                       && request.resource.data.taskId == taskId;
-
-      // Allow a user to delete their own statusHistory if it exists.
-      allow delete: if isExistingOwner(userId);
     }
   }
 }

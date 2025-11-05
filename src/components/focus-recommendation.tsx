@@ -24,7 +24,9 @@ export function FocusRecommendation({ tasks }: FocusRecommendationProps) {
       if (priorityDiff !== 0) return priorityDiff;
 
       // Then by due date (earlier first)
-      return a.dueDate.getTime() - b.dueDate.getTime();
+      const aDueDate = a.dueDate instanceof Date ? a.dueDate : new Date(a.dueDate);
+      const bDueDate = b.dueDate instanceof Date ? b.dueDate : new Date(b.dueDate);
+      return aDueDate.getTime() - bDueDate.getTime();
     })[0];
   }, [tasks]);
 
@@ -59,7 +61,7 @@ export function FocusRecommendation({ tasks }: FocusRecommendationProps) {
                 <PriorityIcon priority={recommendedTask.priority} className="h-4 w-4" />
                 <span>{getPriorityLabel(recommendedTask.priority)}</span>
             </div>
-            <span>Due: {format(recommendedTask.dueDate, "MMM d, yyyy")}</span>
+            <span>Due: {format(new Date(recommendedTask.dueDate), "MMM d, yyyy")}</span>
         </div>
       </CardContent>
     </Card>

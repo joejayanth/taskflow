@@ -25,7 +25,8 @@ export function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
     transform: CSS.Translate.toString(transform),
   };
 
-  const isOverdue = isPast(task.dueDate) && task.status !== 'Done';
+  const dueDate = new Date(task.dueDate);
+  const isOverdue = isPast(dueDate) && task.status !== 'Done';
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -48,7 +49,7 @@ export function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
               variant={isOverdue ? 'destructive' : 'outline'}
               className="font-normal"
             >
-              {format(task.dueDate, "MMM d")}
+              {format(dueDate, "MMM d")}
             </Badge>
           </CardContent>
         </Card>

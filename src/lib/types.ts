@@ -3,7 +3,7 @@ export type Status = 'Yet to Start' | 'WIP' | 'In Review' | 'Done';
 
 export type StatusUpdate = {
   status: Status;
-  timestamp: Date;
+  timestamp: string; // ISO 8601 date string
 };
 
 export interface Task {
@@ -11,7 +11,7 @@ export interface Task {
   title: string;
   description: string;
   priority: Priority;
-  dueDate: Date;
+  dueDate: string; // ISO 8601 date string
   status: Status;
   history: StatusUpdate[];
 }
