@@ -14,7 +14,6 @@ import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -58,6 +57,27 @@ interface TaskDialogProps {
   trigger: React.ReactNode;
   onSave: (task: Task) => void;
 }
+
+const linkify = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.split(urlRegex).map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+};
 
 export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -256,7 +276,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     </>
                  ) : (
                     <>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{task?.description || 'No description provided.'}</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{task?.description ? linkify(task.description) : 'No description provided.'}</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div><span className="font-semibold">Status:</span> {task?.status}</div>
                             <div><span className="font-semibold">Priority:</span> {task?.priority}</div>
