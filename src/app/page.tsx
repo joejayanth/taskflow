@@ -59,6 +59,26 @@ export default function Home() {
     }));
   }, [tasks]);
 
+  const reminderTasks = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return (tasksWithDateObjects as Task[]).filter(task => {
+      if (task.status === 'Done' || !task.reminderDate) {
+        return false;
+      }
+      const reminderDate = new Date(task.reminderDate);
+      reminderDate.setHours(0, 0, 0, 0);
+      
+      const dueDate = new Date(task.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      const shouldRemind = reminderDate.getTime() <= today.getTime() && today.getTime() < dueDate.getTime();
+
+      return shouldRemind;
+    });
+  }, [tasksWithDateObjects]);
+
   const tasksByStatus = useMemo(() => {
     const grouped: { [key in Status]: Task[] } = {
       'Yet to Start': [],
@@ -103,9 +123,6 @@ export default function Home() {
       }))
     };
     
-    // In Firestore, if you want to remove a field, you should set it to `null` 
-    // or use the `deleteField()` sentinel value if you're doing an `updateDoc`.
-    // Since we use `setDoc` with `merge: true`, we need to be explicit about fields we want to remove.
     if (!taskForFirestore.reminderDate) {
       // @ts-ignore
       taskForFirestore.reminderDate = null;
@@ -135,7 +152,6 @@ export default function Home() {
   
     const task = tasksWithDateObjects.find((t) => t.id === activeId);
   
-    // Check if dropping into a column
     const isOverAColumn = over.data.current?.type === 'Column';
   
     if (task && isOverAColumn) {
@@ -166,18 +182,22 @@ export default function Home() {
     );
   }
 
+  const hasReminders = reminderTasks.length > 0;
+
   return (
     <div className="flex h-screen w-full flex-col">
       <AppHeader onTaskCreate={handleTaskUpdate} />
       <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-            <div className="lg:col-span-2">
+            <div className={hasReminders ? "lg:col-span-2" : "lg:col-span-4"}>
               <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
             </div>
-            <div className="lg:col-span-2">
-              <Reminders tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
-            </div>
+            {hasReminders && (
+              <div className="lg:col-span-2">
+                <Reminders tasks={reminderTasks} onTaskUpdate={handleTaskUpdate} />
+              </div>
+            )}
           </div>
            {isClient ? (
             <DndContext 
