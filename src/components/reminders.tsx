@@ -47,32 +47,32 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 pb-4">
-        <ScrollArea className="h-[124px]">
-          {reminderTasks.length > 0 ? (
-            <div className="space-y-1">
-              {reminderTasks.map(task => (
-                <TaskDialog
-                  key={task.id}
-                  task={task}
-                  onSave={onTaskUpdate}
-                  trigger={
-                    <div className="group cursor-pointer rounded-md p-2 hover:bg-accent/40">
-                      <p className="font-semibold group-hover:text-primary truncate pr-4">{task.title}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CalendarClock className="h-4 w-4" />
-                        <span>Due: {format(new Date(task.dueDate), "MMM d, yyyy")}</span>
-                      </div>
-                    </div>
-                  }
-                />
-              ))}
+        {reminderTasks.length > 0 ? (
+            <ScrollArea className="h-[124px]">
+                <div className="space-y-1">
+                {reminderTasks.map(task => (
+                    <TaskDialog
+                    key={task.id}
+                    task={task}
+                    onSave={onTaskUpdate}
+                    trigger={
+                        <div className="group cursor-pointer rounded-md p-2 hover:bg-accent/40">
+                        <p className="font-semibold group-hover:text-primary truncate pr-4">{task.title}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CalendarClock className="h-4 w-4" />
+                            <span>Due: {format(new Date(task.dueDate), "MMM d, yyyy")}</span>
+                        </div>
+                        </div>
+                    }
+                    />
+                ))}
+                </div>
+            </ScrollArea>
+        ) : (
+            <div className="flex items-center justify-center text-sm text-muted-foreground h-[124px]">
+                <p>No active reminders.</p>
             </div>
-          ) : (
-            <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground">No active reminders.</p>
-            </div>
-          )}
-        </ScrollArea>
+        )}
       </CardContent>
     </Card>
   );
