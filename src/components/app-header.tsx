@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TaskDialog } from "@/components/task-dialog";
 import type { Task } from "@/lib/types";
 import { UserProfile } from "./user-profile";
+import { ThemeToggle } from "./theme-toggle";
 
 interface AppHeaderProps {
   onTaskCreate: (task: Task) => void;
@@ -25,6 +26,7 @@ export function AppHeader({ onTaskCreate }: AppHeaderProps) {
               New Task
             </Button>
           } />
+          <ThemeToggle />
           <UserProfile />
         </div>
       </div>
