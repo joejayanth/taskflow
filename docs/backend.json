@@ -53,6 +53,10 @@
             "items": {
                 "$ref": "#/entities/StatusUpdate"
             }
+        },
+        "blocked": {
+            "type": "boolean",
+            "description": "Indicates if the task is blocked."
         }
       },
       "required": [

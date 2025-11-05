@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -43,6 +42,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from './ui/separator';
 import { getPriorityLabel } from './priority-icon';
+import { Switch } from './ui/switch';
+import { Label } from './ui/label';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -50,6 +51,7 @@ const taskSchema = z.object({
   priority: z.enum(['P0', 'P1', 'P2', 'P3']),
   dueDate: z.date({ required_error: 'A due date is required.' }),
   status: z.enum(['Yet to Start', 'WIP', 'In Review', 'Done']),
+  blocked: z.boolean().optional(),
 });
 
 interface TaskDialogProps {
@@ -100,6 +102,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
       priority: task?.priority || 'P2',
       dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
       status: task?.status || 'Yet to Start',
+      blocked: task?.blocked || false,
     },
   });
 
@@ -111,6 +114,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         priority: task.priority,
         dueDate: new Date(task.dueDate),
         status: task.status,
+        blocked: task.blocked,
       });
     } else {
       form.reset({
@@ -119,6 +123,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         priority: 'P2',
         dueDate: new Date(),
         status: 'Yet to Start',
+        blocked: false,
       });
     }
   }, [task, form]);
@@ -144,12 +149,14 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         priority: 'P2',
         dueDate: new Date(),
         status: 'Yet to Start',
+        blocked: false,
       } : {
         title: task?.title,
         description: task?.description,
         priority: task?.priority,
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
+        blocked: task?.blocked,
       });
     }
   }
@@ -165,6 +172,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         priority: task?.priority,
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
+        blocked: task?.blocked,
       });
     }
   }
@@ -308,6 +316,24 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                           )}
                         />
                     </div>
+                     <FormField
+                        control={form.control}
+                        name="blocked"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Mark as Blocked</FormLabel>
+                                    <FormMessage />
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                        />
                     </>
                  ) : (
                     <>
@@ -319,6 +345,11 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                             <div><span className="font-semibold">Priority:</span> {getPriorityLabel(task?.priority)}</div>
                             <div><span className="font-semibold">Due:</span> {task && format(new Date(task.dueDate), 'PPP')}</div>
                         </div>
+                         {task?.blocked && (
+                            <div className="text-sm font-semibold text-destructive">
+                                This task is marked as blocked.
+                            </div>
+                        )}
                     </>
                  )}
             </div>

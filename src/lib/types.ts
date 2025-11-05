@@ -14,4 +14,5 @@ export interface Task {
   dueDate: Date;
   status: Status;
   history: StatusUpdate[];
+  blocked?: boolean;
 }
