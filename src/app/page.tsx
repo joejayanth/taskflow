@@ -171,9 +171,13 @@ export default function Home() {
       <AppHeader onTaskCreate={handleTaskUpdate} />
       <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
-            <Reminders tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            <div className="lg:col-span-2">
+              <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+            </div>
+            <div className="lg:col-span-2">
+              <Reminders tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+            </div>
           </div>
            {isClient ? (
             <DndContext 
