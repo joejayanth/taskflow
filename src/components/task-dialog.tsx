@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose
+  DialogTrigger
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -43,6 +43,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from './ui/separator';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { getPriorityLabel } from './priority-icon';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -81,7 +82,7 @@ const linkify = (text: string) => {
 
 export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(!task);
 
   const isNewTask = !task;
 
@@ -103,6 +104,26 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
     },
   });
 
+   useEffect(() => {
+    if (task) {
+      form.reset({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        dueDate: new Date(task.dueDate),
+        status: task.status,
+      });
+    } else {
+      form.reset({
+        title: '',
+        description: '',
+        priority: 'P2',
+        dueDate: new Date(),
+        status: 'Yet to Start',
+      });
+    }
+  }, [task, form]);
+
   const onSubmit = (values: z.infer<typeof taskSchema>) => {
     const newOrUpdatedTask: Task = {
       id: task?.id || crypto.randomUUID(),
@@ -111,27 +132,25 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
       history: task ? (task.status !== values.status ? [...task.history, {status: values.status, timestamp: new Date()}] : task.history) : [{status: values.status, timestamp: new Date()}],
     };
     onSave(newOrUpdatedTask);
-    if (!isNewTask) {
-        setIsEditing(false);
-    }
     setIsOpen(false);
   };
   
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      form.reset(task ? {
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        dueDate: new Date(task.dueDate),
-        status: task.status,
-      } : {
+      setIsEditing(isNewTask);
+       form.reset(isNewTask ? {
         title: '',
         description: '',
         priority: 'P2',
         dueDate: new Date(),
         status: 'Yet to Start',
+      } : {
+        title: task?.title,
+        description: task?.description,
+        priority: task?.priority,
+        dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
+        status: task?.status,
       });
     }
   }
@@ -165,21 +184,19 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <DialogTitle asChild>
-                              <Input placeholder="Task Title" {...field} className="text-2xl font-bold border-0 shadow-none px-0 focus-visible:ring-0" />
-                            </DialogTitle>
+                            <Input placeholder="Task Title" {...field} className="text-2xl font-bold border-0 shadow-none px-0 h-auto focus-visible:ring-0" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                 ) : (
-                  <DialogTitle className="flex items-center justify-between pr-8">
-                      <span className="text-2xl">{task?.title}</span>
+                  <div className="flex items-center justify-between pr-8">
+                     <DialogTitle className="text-2xl">{task?.title}</DialogTitle>
                       <Button type="button" variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
                           <Pencil className="h-5 w-5" />
                       </Button>
-                  </DialogTitle>
+                  </div>
                 )}
                  <VisuallyHidden>
                   <DialogTitle>{task?.title || 'New Task'}</DialogTitle>
@@ -296,10 +313,12 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     </>
                  ) : (
                     <>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{task?.description ? linkify(task.description) : 'No description provided.'}</p>
+                        <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[60px]">
+                            {task?.description ? linkify(task.description) : 'No description provided.'}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                             <div><span className="font-semibold">Status:</span> {task?.status}</div>
-                            <div><span className="font-semibold">Priority:</span> {getPriorityLabel(task.priority)}</div>
+                            <div><span className="font-semibold">Priority:</span> {getPriorityLabel(task?.priority)}</div>
                             <div><span className="font-semibold">Due:</span> {task && format(new Date(task.dueDate), 'PPP')}</div>
                         </div>
                     </>
@@ -310,7 +329,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                 <div className="space-y-2">
                     <h4 className="flex items-center gap-2 text-sm font-semibold"><History className="h-4 w-4"/> Status History</h4>
                     <Separator />
-                    <ul className="space-y-1 text-xs text-muted-foreground">
+                    <ul className="space-y-1 text-xs text-muted-foreground max-h-24 overflow-y-auto">
                         {task.history.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((h, i) => (
                             <li key={i}>{format(new Date(h.timestamp), 'MMM d, yyyy, h:mm a')}: Status changed to <strong>{h.status}</strong></li>
                         ))}
