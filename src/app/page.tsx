@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Task, Status } from '@/lib/types';
+import type { Task, Status, Priority } from '@/lib/types';
 import { DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { AppHeader } from '@/components/app-header';
 import { TaskBoard } from '@/components/task-board';
@@ -12,6 +13,7 @@ import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const statuses: Status[] = ['Yet to Start', 'WIP', 'In Review', 'Done'];
+const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
@@ -56,9 +58,18 @@ export default function Home() {
         grouped[task.status].push(task as Task);
       }
     });
-    // Sort tasks in each column by due date
+    
+    // Sort tasks in each column
     for (const status in grouped) {
-      grouped[status as Status].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+      grouped[status as Status].sort((a, b) => {
+        // Sort by priority first
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) {
+          return priorityDiff;
+        }
+        // Then by due date (earlier first)
+        return a.dueDate.getTime() - b.dueDate.getTime();
+      });
     }
     return grouped;
   }, [tasksWithDateObjects]);
