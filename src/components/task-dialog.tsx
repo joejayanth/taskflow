@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -42,7 +42,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from './ui/separator';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { getPriorityLabel } from './priority-icon';
 
 const taskSchema = z.object({
@@ -177,6 +176,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <DialogHeader>
+              <DialogTitle>
                 {isEditing ? (
                   <FormField
                       control={form.control}
@@ -192,15 +192,13 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     />
                 ) : (
                   <div className="flex items-center justify-between pr-8">
-                     <DialogTitle className="text-2xl">{task?.title}</DialogTitle>
+                     <span className="text-2xl">{task?.title}</span>
                       <Button type="button" variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
                           <Pencil className="h-5 w-5" />
                       </Button>
                   </div>
                 )}
-                 <VisuallyHidden>
-                  <DialogTitle>{task?.title || 'New Task'}</DialogTitle>
-                </VisuallyHidden>
+              </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -313,7 +311,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     </>
                  ) : (
                     <>
-                        <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[60px]">
+                        <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[60px] break-words">
                             {task?.description ? linkify(task.description) : 'No description provided.'}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
