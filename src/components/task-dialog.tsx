@@ -62,8 +62,7 @@ interface TaskDialogProps {
 
 const linkify = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    // The 'break-words' class is crucial for preventing overflow with long URLs.
-    return <div className="break-words">{text.split(urlRegex).map((part, i) => {
+    return <div className="break-all">{text.split(urlRegex).map((part, i) => {
       if (part.match(urlRegex)) {
         return (
           <a
