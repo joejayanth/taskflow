@@ -36,16 +36,16 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
 
   return (
     <Card className="bg-primary/10 border-primary/40 shadow-sm">
-      <CardHeader>
+      <CardHeader className="py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Lightbulb className="h-5 w-5 text-primary" />
           <span>Focus Recommendations</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-40">
+      <CardContent className="pt-0 pb-4">
+        <ScrollArea className="h-[124px]">
             {recommendedTasks.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-1">
                 {recommendedTasks.map(task => (
                     <TaskDialog
                     key={task.id}
