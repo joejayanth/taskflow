@@ -64,11 +64,13 @@ export default function Home() {
       'In Review': [],
       'Done': [],
     };
-    tasksWithDateObjects.forEach((task) => {
-      if (grouped[task.status]) {
-        grouped[task.status].push(task as Task);
-      }
-    });
+    if (tasksWithDateObjects) {
+      tasksWithDateObjects.forEach((task) => {
+        if (grouped[task.status]) {
+          grouped[task.status].push(task as Task);
+        }
+      });
+    }
     
     // Sort tasks in each column
     for (const status in grouped) {
@@ -112,16 +114,29 @@ export default function Home() {
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveTask(null);
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const taskId = active.id as string;
-      const newStatus = over.id as Status;
-      
-      const task = tasksWithDateObjects.find(t => t.id === taskId);
-      if (task && task.status !== newStatus) {
+  
+    if (!over) return;
+  
+    const activeId = active.id;
+    const overId = over.id;
+  
+    if (activeId === overId) return;
+  
+    const task = tasksWithDateObjects.find((t) => t.id === activeId);
+  
+    // Check if dropping into a column
+    const isOverAColumn = over.data.current?.type === 'Column';
+  
+    if (task && isOverAColumn) {
+      const newStatus = over.data.current.status as Status;
+      if (task.status !== newStatus) {
         const updatedTask: Task = {
           ...task,
           status: newStatus,
-          history: [...task.history, { status: newStatus, timestamp: new Date() }],
+          history: [
+            ...task.history,
+            { status: newStatus, timestamp: new Date() },
+          ],
         };
         handleTaskUpdate(updatedTask);
       }
