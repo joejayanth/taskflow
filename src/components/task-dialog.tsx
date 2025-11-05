@@ -62,7 +62,8 @@ interface TaskDialogProps {
 
 const linkify = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.split(urlRegex).map((part, i) => {
+    // The 'break-words' class is crucial for preventing overflow with long URLs.
+    return <div className="break-words">{text.split(urlRegex).map((part, i) => {
       if (part.match(urlRegex)) {
         return (
           <a
@@ -78,7 +79,7 @@ const linkify = (text: string) => {
         );
       }
       return part;
-    });
+    })}</div>;
 };
 
 export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
@@ -337,7 +338,7 @@ export function TaskDialog({ task, trigger, onSave }: TaskDialogProps) {
                     </>
                  ) : (
                     <>
-                        <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[60px] break-words">
+                        <div className="text-sm text-muted-foreground whitespace-pre-wrap min-h-[60px]">
                             {task?.description ? linkify(task.description) : 'No description provided.'}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
