@@ -49,11 +49,12 @@ export default function Home() {
   }, [user, isUserLoading, router]);
 
   const tasksWithDateObjects = useMemo(() => {
-    return tasks?.map(task => ({
+    if (!tasks) return [];
+    return tasks.map(task => ({
       ...task,
       dueDate: new Date(task.dueDate),
       history: task.history.map(h => ({...h, timestamp: new Date(h.timestamp)}))
-    })) || [];
+    }));
   }, [tasks]);
 
   const tasksByStatus = useMemo(() => {
@@ -144,7 +145,7 @@ export default function Home() {
       <AppHeader onTaskCreate={handleTaskUpdate} />
       <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
-          <FocusRecommendation tasks={tasksWithDateObjects as Task[]} />
+          <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
            {isClient ? (
             <DndContext 
               sensors={sensors}
