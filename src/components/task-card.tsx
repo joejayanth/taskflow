@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
@@ -10,7 +11,6 @@ import { TaskDialog } from './task-dialog';
 import { PriorityIcon, getPriorityLabel } from './priority-icon';
 import { GripVertical } from 'lucide-react';
 import { Button } from './ui/button';
-import { Checkbox } from './ui/checkbox';
 import { useSortable } from '@dnd-kit/sortable';
 
 interface TaskCardProps {
@@ -37,11 +37,6 @@ export function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
 
   const dueDate = new Date(task.dueDate);
   const isOverdue = isPast(dueDate) && task.status !== 'Done';
-
-  const handleBlockedChange = (checked: boolean) => {
-    onTaskUpdate({ ...task, blocked: checked });
-  };
-
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
@@ -70,19 +65,6 @@ export function TaskCard({ task, onTaskUpdate }: TaskCardProps) {
                 </Badge>
             </div>
           </CardContent>
-           <div className="px-4 pb-4 flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  id={`blocked-${task.id}`}
-                  checked={!!task.blocked}
-                  onCheckedChange={handleBlockedChange}
-                />
-                <label
-                  htmlFor={`blocked-${task.id}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Blocked
-                </label>
-            </div>
         </Card>
       } />
     </div>
