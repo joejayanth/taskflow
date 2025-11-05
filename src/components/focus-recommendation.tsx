@@ -62,13 +62,15 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <h3 className="text-lg font-semibold">{recommendedTask.title}</h3>
-            <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                    <PriorityIcon priority={recommendedTask.priority} className="h-4 w-4" />
-                    <span>{getPriorityLabel(recommendedTask.priority)}</span>
-                </div>
-                <span>Due: {format(new Date(recommendedTask.dueDate), "MMM d, yyyy")}</span>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold truncate pr-4">{recommendedTask.title}</h3>
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground flex-shrink-0">
+                  <div className="flex items-center gap-1">
+                      <PriorityIcon priority={recommendedTask.priority} className="h-4 w-4" />
+                      <span>{getPriorityLabel(recommendedTask.priority)}</span>
+                  </div>
+                  <span>Due: {format(new Date(recommendedTask.dueDate), "MMM d, yyyy")}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
