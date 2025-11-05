@@ -29,16 +29,16 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
 
   return (
     <Card className="bg-accent/20 border-accent/40 shadow-sm">
-      <CardHeader>
+      <CardHeader className="py-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <BellRing className="h-5 w-5 text-accent-foreground" />
           <span>Reminders</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-40">
+      <CardContent className="pt-0 pb-4">
+        <ScrollArea className="h-[124px]">
           {reminderTasks.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-1">
               {reminderTasks.map(task => (
                 <TaskDialog
                   key={task.id}
@@ -46,7 +46,7 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
                   onSave={onTaskUpdate}
                   trigger={
                     <div className="group cursor-pointer rounded-md p-2 hover:bg-accent/40">
-                      <p className="font-semibold group-hover:text-primary">{task.title}</p>
+                      <p className="font-semibold group-hover:text-primary truncate pr-4">{task.title}</p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CalendarClock className="h-4 w-4" />
                         <span>Due: {format(new Date(task.dueDate), "MMM d, yyyy")}</span>
