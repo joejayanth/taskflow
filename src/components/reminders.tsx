@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import type { Task } from "@/lib/types";
 import { BellRing, CalendarClock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format, isAfter, isBefore, startOfToday, isEqual } from "date-fns";
+import { format } from "date-fns";
 import { TaskDialog } from "./task-dialog";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -16,16 +16,23 @@ interface RemindersProps {
 
 export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
   const reminderTasks = useMemo(() => {
-    const today = startOfToday();
+    const today = new Date();
+    // Set time to 00:00:00 to compare dates only
+    today.setHours(0, 0, 0, 0);
+
     return tasks.filter(task => {
       if (task.status === 'Done' || !task.reminderDate) {
         return false;
       }
-      const reminderDate = startOfToday(new Date(task.reminderDate));
-      const dueDate = startOfToday(new Date(task.dueDate));
+      const reminderDate = new Date(task.reminderDate);
+      reminderDate.setHours(0, 0, 0, 0);
       
-      // Show reminder if today is on or after the reminder date, but before the due date.
-      const shouldRemind = !isAfter(reminderDate, today) && isBefore(today, dueDate);
+      const dueDate = new Date(task.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      // Show reminder if today's date is on or after the reminder date, 
+      // and before the due date.
+      const shouldRemind = reminderDate.getTime() <= today.getTime() && today.getTime() < dueDate.getTime();
 
       return shouldRemind;
     });
