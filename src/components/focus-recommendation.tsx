@@ -6,7 +6,7 @@ import type { Task, Priority, Status } from "@/lib/types";
 import { Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityIcon, getPriorityLabel } from "./priority-icon";
-import { format, isPast, differenceInCalendarDays } from "date-fns";
+import { format, isPast, differenceInCalendarDays, isToday, getDay, addDays } from "date-fns";
 import { TaskDialog } from "./task-dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
@@ -18,29 +18,50 @@ interface FocusRecommendationProps {
 
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
 
-const isImminent = (dueDate: Date): boolean => {
+const isBusinessDay = (date: Date) => {
+  const day = getDay(date);
+  return day !== 0 && day !== 6;
+};
+
+const getNextTwoBusinessDays = () => {
+    let businessDays: Date[] = [];
+    let date = addDays(new Date(), 1); // Start from tomorrow
+
+    while(businessDays.length < 2) {
+        if(isBusinessDay(date)) {
+            businessDays.push(date);
+        }
+        date = addDays(date, 1);
+    }
+    return businessDays;
+}
+
+const isDueSoon = (dueDate: Date): boolean => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
   const due = new Date(dueDate);
   due.setHours(0, 0, 0, 0);
 
-  if (isPast(due) && !isToday(due)) {
-    return true; // Overdue
+  if (due.getTime() < today.getTime()) {
+      return true; // Overdue
   }
-  const daysUntilDue = differenceInCalendarDays(due, today);
-  return daysUntilDue >= 0 && daysUntilDue <= 2; // Due today or in the next 2 days
+  
+  if (isToday(due)) {
+      return true; // Due today
+  }
+
+  const nextTwoBusinessDays = getNextTwoBusinessDays();
+  const nextBizDay1 = nextTwoBusinessDays[0];
+  nextBizDay1.setHours(0,0,0,0);
+  const nextBizDay2 = nextTwoBusinessDays[1];
+  nextBizDay2.setHours(0,0,0,0);
+  
+  return due.getTime() === nextBizDay1.getTime() || due.getTime() === nextBizDay2.getTime();
 };
 
-// Helper function to check if a date is today
-const isToday = (date: Date): boolean => {
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
-}
-
 const getTaskSortScore = (task: Task): number => {
-    const imminent = isImminent(new Date(task.dueDate));
+    const imminent = isDueSoon(new Date(task.dueDate));
     const baseScore = imminent ? 0 : 10; // Prioritize imminent tasks
 
     if (task.priority === 'P0' && task.status === 'Yet to Start') return baseScore + 0;
@@ -55,9 +76,11 @@ const getTaskSortScore = (task: Task): number => {
 
 export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendationProps) {
   const recommendedTasks = useMemo(() => {
-    const activeTasks = tasks.filter(task => task.status !== 'Done');
+    const activeAndDueSoonTasks = tasks.filter(task => 
+        task.status !== 'Done' && isDueSoon(new Date(task.dueDate))
+    );
     
-    return activeTasks.sort((a, b) => {
+    return activeAndDueSoonTasks.sort((a, b) => {
         const scoreA = getTaskSortScore(a);
         const scoreB = getTaskSortScore(b);
 
@@ -110,7 +133,7 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
                 </div>
             ) : (
                 <div className="flex h-[124px] items-center justify-center">
-                    <p className="text-muted-foreground">All tasks are done! Great job!</p>
+                    <p className="text-muted-foreground">No urgent tasks due soon. Great job!</p>
                 </div>
             )}
         </ScrollArea>
