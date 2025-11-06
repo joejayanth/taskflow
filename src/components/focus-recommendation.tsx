@@ -9,6 +9,7 @@ import { PriorityIcon, getPriorityLabel } from "./priority-icon";
 import { format, isPast, differenceInCalendarDays } from "date-fns";
 import { TaskDialog } from "./task-dialog";
 import { ScrollArea } from "./ui/scroll-area";
+import { Badge } from "./ui/badge";
 
 interface FocusRecommendationProps {
   tasks: Task[];
@@ -19,10 +20,14 @@ const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3
 
 const isImminent = (dueDate: Date): boolean => {
   const today = new Date();
-  if (isPast(dueDate) && !isToday(dueDate)) {
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  if (isPast(due) && !isToday(due)) {
     return true; // Overdue
   }
-  const daysUntilDue = differenceInCalendarDays(dueDate, today);
+  const daysUntilDue = differenceInCalendarDays(due, today);
   return daysUntilDue >= 0 && daysUntilDue <= 2; // Due today or in the next 2 days
 };
 
@@ -89,12 +94,13 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
                         <div className="group cursor-pointer rounded-md p-2 hover:bg-primary/20">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-base font-semibold truncate pr-4 group-hover:text-primary">{task.title}</h3>
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground flex-shrink-0">
+                                <div className="flex items-center space-x-2 text-sm text-muted-foreground flex-shrink-0">
+                                    <Badge variant="outline" className="hidden sm:inline-flex">{task.status}</Badge>
                                     <div className="flex items-center gap-1">
                                         <PriorityIcon priority={task.priority} className="h-4 w-4" />
-                                        <span>{getPriorityLabel(task.priority)}</span>
+                                        <span className="hidden sm:inline-block">{getPriorityLabel(task.priority)}</span>
                                     </div>
-                                    <span>Due: {format(new Date(task.dueDate), "MMM d, yyyy")}</span>
+                                    <span>Due: {format(new Date(task.dueDate), "MMM d")}</span>
                                 </div>
                             </div>
                         </div>
