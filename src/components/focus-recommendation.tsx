@@ -6,7 +6,7 @@ import type { Task, Priority, Status } from "@/lib/types";
 import { Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityIcon, getPriorityLabel } from "./priority-icon";
-import { format } from "date-fns";
+import { format, isPast, differenceInCalendarDays } from "date-fns";
 import { TaskDialog } from "./task-dialog";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -17,21 +17,34 @@ interface FocusRecommendationProps {
 
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
 
+const isImminent = (dueDate: Date): boolean => {
+  const today = new Date();
+  if (isPast(dueDate) && !isToday(dueDate)) {
+    return true; // Overdue
+  }
+  const daysUntilDue = differenceInCalendarDays(dueDate, today);
+  return daysUntilDue >= 0 && daysUntilDue <= 2; // Due today or in the next 2 days
+};
+
+// Helper function to check if a date is today
+const isToday = (date: Date): boolean => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+}
+
 const getTaskSortScore = (task: Task): number => {
-    // Desired order:
-    // - urgent and yet to start
-    // - urgent and WIP
-    // - high and yet to start
-    // - high and WIP
-    // - In review
-    if (task.priority === 'P0' && task.status === 'Yet to Start') return 0;
-    if (task.priority === 'P0' && task.status === 'WIP') return 1;
-    if (task.priority === 'P1' && task.status === 'Yet to Start') return 2;
-    if (task.priority === 'P1' && task.status === 'WIP') return 3;
-    if (task.status === 'In Review') return 4;
+    const imminent = isImminent(new Date(task.dueDate));
+    const baseScore = imminent ? 0 : 10; // Prioritize imminent tasks
+
+    if (task.priority === 'P0' && task.status === 'Yet to Start') return baseScore + 0;
+    if (task.priority === 'P0' && task.status === 'WIP') return baseScore + 1;
+    if (task.priority === 'P1' && task.status === 'Yet to Start') return baseScore + 2;
+    if (task.priority === 'P1' && task.status === 'WIP') return baseScore + 3;
+    if (task.status === 'In Review') return baseScore + 4;
     
-    // Fallback for other tasks, sorted by priority
-    return 5 + priorityOrder[task.priority];
+    return baseScore + 5 + priorityOrder[task.priority];
 };
 
 
