@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Task } from "@/lib/types";
+import type { Task, Priority, Status } from "@/lib/types";
 import { Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityIcon, getPriorityLabel } from "./priority-icon";
@@ -15,22 +15,43 @@ interface FocusRecommendationProps {
   onTaskUpdate: (task: Task) => void;
 }
 
-const priorityOrder = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
+const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
+
+const getTaskSortScore = (task: Task): number => {
+    // Desired order:
+    // - urgent and yet to start
+    // - urgent and WIP
+    // - high and yet to start
+    // - high and WIP
+    // - In review
+    if (task.priority === 'P0' && task.status === 'Yet to Start') return 0;
+    if (task.priority === 'P0' && task.status === 'WIP') return 1;
+    if (task.priority === 'P1' && task.status === 'Yet to Start') return 2;
+    if (task.priority === 'P1' && task.status === 'WIP') return 3;
+    if (task.status === 'In Review') return 4;
+    
+    // Fallback for other tasks, sorted by priority
+    return 5 + priorityOrder[task.priority];
+};
+
 
 export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendationProps) {
   const recommendedTasks = useMemo(() => {
     const activeTasks = tasks.filter(task => task.status !== 'Done');
-    if (activeTasks.length === 0) return [];
-
+    
     return activeTasks.sort((a, b) => {
-      // Sort by priority
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) return priorityDiff;
+        const scoreA = getTaskSortScore(a);
+        const scoreB = getTaskSortScore(b);
 
-      // Then by due date (earlier first)
-      const aDueDate = a.dueDate instanceof Date ? a.dueDate : new Date(a.dueDate);
-      const bDueDate = b.dueDate instanceof Date ? b.dueDate : new Date(b.dueDate);
-      return aDueDate.getTime() - bDueDate.getTime();
+        if (scoreA !== scoreB) {
+            return scoreA - scoreB;
+        }
+
+        // If scores are the same, use due date as a tie-breaker
+        const aDueDate = a.dueDate instanceof Date ? a.dueDate : new Date(a.dueDate);
+        const bDueDate = b.dueDate instanceof Date ? b.dueDate : new Date(b.dueDate);
+        return aDueDate.getTime() - bDueDate.getTime();
+
     }).slice(0, 3);
   }, [tasks]);
 
@@ -69,7 +90,7 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
                 ))}
                 </div>
             ) : (
-                <div className="flex h-full items-center justify-center">
+                <div className="flex h-[124px] items-center justify-center">
                     <p className="text-muted-foreground">All tasks are done! Great job!</p>
                 </div>
             )}
