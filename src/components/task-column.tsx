@@ -10,11 +10,13 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Button } from './ui/button';
 import { Plus } from 'lucide-react';
 import { TaskDialog } from './task-dialog';
+import { DoneColumnActions } from './done-column-actions';
 
 interface TaskColumnProps {
   status: Status;
   tasks: Task[];
   onTaskUpdate: (task: Task) => void;
+  onDeleteAll?: (tasks: Task[]) => void;
 }
 
 const statusConfig: Record<Status, { color: string, title: string }> = {
@@ -25,7 +27,7 @@ const statusConfig: Record<Status, { color: string, title: string }> = {
 };
 
 
-export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
+export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll }: TaskColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: status,
     data: {
@@ -50,16 +52,19 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
             <h2 className="font-semibold">{config.title}</h2>
             <span className="text-sm text-muted-foreground">{tasks.length}</span>
         </div>
-        <TaskDialog
-            onSave={onTaskUpdate}
-            initialStatus={status}
-            trigger={
-                <Button variant="ghost" size="sm" className="h-7 px-2">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                </Button>
-            }
-        />
+        <div className="flex items-center gap-1">
+            <TaskDialog
+                onSave={onTaskUpdate}
+                initialStatus={status}
+                trigger={
+                    <Button variant="ghost" size="sm" className="h-7 px-2">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
+                    </Button>
+                }
+            />
+            {status === 'Done' && onDeleteAll && <DoneColumnActions tasks={tasks} onDeleteAll={onDeleteAll} />}
+        </div>
       </div>
       <ScrollArea className="flex-1">
         <div ref={setNodeRef} className="p-4 min-h-[400px]">

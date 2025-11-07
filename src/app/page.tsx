@@ -10,7 +10,7 @@ import { TaskBoard } from '@/components/task-board';
 import { FocusRecommendation } from '@/components/focus-recommendation';
 import { Reminders } from '@/components/reminders';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { TaskCard } from '@/components/task-card';
 
@@ -123,12 +123,26 @@ export default function Home() {
       }))
     };
     
+    // Firestore does not accept `undefined` so we delete the key instead.
     if (!taskForFirestore.reminderDate) {
       // @ts-ignore
-      taskForFirestore.reminderDate = null;
+      delete taskForFirestore.reminderDate;
     }
     
     setDocumentNonBlocking(taskRef, taskForFirestore, { merge: true });
+  };
+
+  const handleDeleteAllDone = (tasksToDelete: Task[]) => {
+    if (!user || !firestore) return;
+
+    const batch = writeBatch(firestore);
+    tasksToDelete.forEach(task => {
+        const taskRef = doc(firestore, 'users', user.uid, 'tasks', task.id);
+        batch.delete(taskRef);
+    });
+    batch.commit().catch(err => {
+        console.error("Failed to delete all done tasks:", err);
+    })
   };
   
   const handleDragStart = (event: DragStartEvent) => {
@@ -206,16 +220,17 @@ export default function Home() {
               onDragEnd={handleDragEnd} 
               onDragCancel={handleDragCancel}
             >
-              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} />
+              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} />
                <DragOverlay>
                 {activeTask ? <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay /> : null}
               </DragOverlay>
             </DndContext>
           ) : (
-            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} />
+            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} />
           )}
         </div>
       </main>
     </div>
   );
 }
+
