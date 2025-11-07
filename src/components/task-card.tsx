@@ -3,7 +3,7 @@
 "use client";
 
 import { CSS } from '@dnd-kit/utilities';
-import type { Task } from '@/lib/types';
+import type { Task, Category } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format, isPast } from 'date-fns';
@@ -18,9 +18,10 @@ interface TaskCardProps {
   task: Task;
   onTaskUpdate: (task: Task) => void;
   isOverlay?: boolean;
+  categoryFilter: Category | 'all';
 }
 
-export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
+export function TaskCard({ task, onTaskUpdate, isOverlay, categoryFilter }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -56,7 +57,7 @@ export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
               <span>{getPriorityLabel(task.priority)}</span>
             </div>
             <div className='flex items-center gap-2'>
-                {task.category === 'work' ? <Briefcase className="h-4 w-4 text-muted-foreground" /> : <Home className="h-4 w-4 text-muted-foreground" />}
+                {categoryFilter === 'all' && (task.category === 'work' ? <Briefcase className="h-4 w-4 text-muted-foreground" /> : <Home className="h-4 w-4 text-muted-foreground" />)}
                 {task.blocked && <Badge variant="destructive">Blocked</Badge>}
                 <Badge
                 variant={isOverdue ? 'destructive' : 'outline'}

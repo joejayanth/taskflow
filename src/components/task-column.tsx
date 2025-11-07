@@ -2,7 +2,7 @@
 "use client";
 
 import { useDroppable } from '@dnd-kit/core';
-import type { Task, Status } from '@/lib/types';
+import type { Task, Status, Category } from '@/lib/types';
 import { TaskCard } from './task-card';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,6 +17,7 @@ interface TaskColumnProps {
   tasks: Task[];
   onTaskUpdate: (task: Task) => void;
   onDeleteAll?: (tasks: Task[]) => void;
+  categoryFilter: Category | 'all';
 }
 
 const statusConfig: Record<Status, { color: string, title: string }> = {
@@ -27,7 +28,7 @@ const statusConfig: Record<Status, { color: string, title: string }> = {
 };
 
 
-export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll }: TaskColumnProps) {
+export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryFilter }: TaskColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: status,
     data: {
@@ -70,7 +71,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll }: TaskCol
         <div ref={setNodeRef} className="p-4 min-h-[400px]">
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.length > 0 ? (
-              tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate}/>)
+              tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate} categoryFilter={categoryFilter} />)
             ) : (
               <div className="flex h-40 items-center justify-center rounded-md border-2 border-dashed border-border">
                 <p className="text-sm text-muted-foreground">Drop tasks here</p>

@@ -248,13 +248,13 @@ export default function Home() {
               onDragEnd={handleDragEnd} 
               onDragCancel={handleDragCancel}
             >
-              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} />
+              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
                <DragOverlay>
-                {activeTask ? <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay /> : null}
+                {activeTask ? <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay categoryFilter={categoryFilter} /> : null}
               </DragOverlay>
             </DndContext>
           ) : (
-            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} />
+            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
           )}
         </div>
       </div>

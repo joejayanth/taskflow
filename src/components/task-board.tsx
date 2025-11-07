@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Task, Status } from '@/lib/types';
+import type { Task, Status, Category } from '@/lib/types';
 import { TaskColumn } from '@/components/task-column';
 
 interface TaskBoardProps {
@@ -9,9 +9,10 @@ interface TaskBoardProps {
   tasksByStatus: { [key in Status]: Task[] };
   onTaskUpdate: (task: Task) => void;
   onDeleteAllDone: (tasks: Task[]) => void;
+  categoryFilter: Category | 'all';
 }
 
-export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onDeleteAllDone }: TaskBoardProps) {
+export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onDeleteAllDone, categoryFilter }: TaskBoardProps) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {statuses.map(status => (
@@ -21,6 +22,7 @@ export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onDeleteAllDo
           tasks={tasksByStatus[status]}
           onTaskUpdate={onTaskUpdate}
           onDeleteAll={status === 'Done' ? onDeleteAllDone : undefined}
+          categoryFilter={categoryFilter}
         />
       ))}
     </div>
