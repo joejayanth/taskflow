@@ -28,9 +28,24 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseClientProvider>
-            {children}
-          </FirebaseClientProvider>
+          <div className="flex min-h-screen flex-col">
+            <main className="flex-1">
+              <FirebaseClientProvider>
+                {children}
+              </FirebaseClientProvider>
+            </main>
+            <footer className="py-4 px-4 text-center text-sm text-muted-foreground">
+              Crafted by{' '}
+              <a
+                href="https://halwalabs.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground"
+              >
+                HalwaLabs
+              </a>
+            </footer>
+          </div>
           <Toaster />
         </ThemeProvider>
       </body>

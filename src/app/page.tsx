@@ -199,9 +199,9 @@ export default function Home() {
   const hasReminders = reminderTasks.length > 0;
 
   return (
-    <div className="flex h-screen w-full flex-col">
+    <div className="flex h-screen flex-col">
       <AppHeader onTaskCreate={handleTaskUpdate} />
-      <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+      <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
             <div className={hasReminders ? "lg:col-span-2" : "lg:col-span-4"}>
@@ -229,8 +229,7 @@ export default function Home() {
             <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} />
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
-
