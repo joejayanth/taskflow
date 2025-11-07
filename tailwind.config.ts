@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Shadows Into Light Two"', 'cursive'],
-        headline: ['"Shadows Into Light Two"', 'cursive'],
+        body: ['"Fontdiner Swanky"', 'cursive'],
+        headline: ['"Fontdiner Swanky"', 'cursive'],
         code: ['monospace'],
       },
       colors: {
