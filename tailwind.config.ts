@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Kalam', 'cursive'],
-        headline: ['Kalam', 'cursive'],
+        body: ['"Shadows Into Light Two"', 'cursive'],
+        headline: ['"Shadows Into Light Two"', 'cursive'],
         code: ['monospace'],
       },
       colors: {
