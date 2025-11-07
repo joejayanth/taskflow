@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Task, Status, Priority } from '@/lib/types';
+import type { Task, Status, Priority, Category } from '@/lib/types';
 import { DndContext, type DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { AppHeader } from '@/components/app-header';
 import { TaskBoard } from '@/components/task-board';
@@ -13,6 +13,7 @@ import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebas
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { TaskCard } from '@/components/task-card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const statuses: Status[] = ['Yet to Start', 'WIP', 'In Review', 'Done'];
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
@@ -30,6 +31,7 @@ export default function Home() {
   const { data: tasks, isLoading: areTasksLoading } = useCollection<Omit<Task, 'id'>>(tasksQuery);
   const [isClient, setIsClient] = useState(false);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -41,7 +43,17 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true);
+    const savedFilter = localStorage.getItem('taskCategoryFilter') as Category | 'all' | null;
+    if (savedFilter) {
+      setCategoryFilter(savedFilter);
+    }
   }, []);
+
+  const handleFilterChange = (value: string) => {
+    const filterValue = value as Category | 'all';
+    setCategoryFilter(filterValue);
+    localStorage.setItem('taskCategoryFilter', filterValue);
+  }
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -59,11 +71,18 @@ export default function Home() {
     }));
   }, [tasks]);
 
+  const filteredTasks = useMemo(() => {
+    if (categoryFilter === 'all') {
+      return tasksWithDateObjects;
+    }
+    return tasksWithDateObjects.filter(task => task.category === categoryFilter);
+  }, [tasksWithDateObjects, categoryFilter]);
+
   const reminderTasks = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return (tasksWithDateObjects as Task[]).filter(task => {
+    return (filteredTasks as Task[]).filter(task => {
       if (task.status === 'Done' || !task.reminderDate) {
         return false;
       }
@@ -77,7 +96,7 @@ export default function Home() {
 
       return shouldRemind;
     });
-  }, [tasksWithDateObjects]);
+  }, [filteredTasks]);
 
   const tasksByStatus = useMemo(() => {
     const grouped: { [key in Status]: Task[] } = {
@@ -86,8 +105,8 @@ export default function Home() {
       'In Review': [],
       'Done': [],
     };
-    if (tasksWithDateObjects) {
-      tasksWithDateObjects.forEach((task) => {
+    if (filteredTasks) {
+      filteredTasks.forEach((task) => {
         if (grouped[task.status]) {
           grouped[task.status].push(task as Task);
         }
@@ -107,7 +126,7 @@ export default function Home() {
       });
     }
     return grouped;
-  }, [tasksWithDateObjects]);
+  }, [filteredTasks]);
 
   const handleTaskUpdate = (updatedTask: Task) => {
     if (!user) return;
@@ -205,13 +224,22 @@ export default function Home() {
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
             <div className={hasReminders ? "lg:col-span-2" : "lg:col-span-4"}>
-              <FocusRecommendation tasks={tasksWithDateObjects as Task[]} onTaskUpdate={handleTaskUpdate} />
+              <FocusRecommendation tasks={filteredTasks as Task[]} onTaskUpdate={handleTaskUpdate} />
             </div>
             {hasReminders && (
               <div className="lg:col-span-2">
                 <Reminders tasks={reminderTasks} onTaskUpdate={handleTaskUpdate} />
               </div>
             )}
+          </div>
+          <div className="flex justify-end">
+            <Tabs value={categoryFilter} onValueChange={handleFilterChange}>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="work">Work</TabsTrigger>
+                <TabsTrigger value="personal">Personal</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
            {isClient ? (
             <DndContext 

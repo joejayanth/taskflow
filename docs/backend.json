@@ -48,6 +48,11 @@
           "description": "Current status of the task (Yet to Start, WIP, In Review, Done).",
           "enum": ["Yet to Start", "WIP", "In Review", "Done"]
         },
+        "category": {
+            "type": "string",
+            "description": "Category of the task (work, personal).",
+            "enum": ["work", "personal"]
+        },
         "history": {
             "type": "array",
             "items": {
@@ -70,7 +75,8 @@
         "priority",
         "dueDate",
         "status",
-        "history"
+        "history",
+        "category"
       ]
     },
     "StatusUpdate": {

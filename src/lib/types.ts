@@ -1,5 +1,6 @@
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3';
 export type Status = 'Yet to Start' | 'WIP' | 'In Review' | 'Done';
+export type Category = 'work' | 'personal';
 
 export type StatusUpdate = {
   status: Status;
@@ -14,6 +15,7 @@ export interface Task {
   dueDate: Date;
   status: Status;
   history: StatusUpdate[];
+  category: Category;
   blocked?: boolean;
   reminderDate?: Date;
 }

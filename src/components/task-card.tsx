@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { format, isPast } from 'date-fns';
 import { TaskDialog } from './task-dialog';
 import { PriorityIcon, getPriorityLabel } from './priority-icon';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Briefcase, Home } from 'lucide-react';
 import { Button } from './ui/button';
 import { useSortable } from '@dnd-kit/sortable';
 import { cn } from '@/lib/utils';
@@ -56,6 +56,7 @@ export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
               <span>{getPriorityLabel(task.priority)}</span>
             </div>
             <div className='flex items-center gap-2'>
+                {task.category === 'work' ? <Briefcase className="h-4 w-4 text-muted-foreground" /> : <Home className="h-4 w-4 text-muted-foreground" />}
                 {task.blocked && <Badge variant="destructive">Blocked</Badge>}
                 <Badge
                 variant={isOverdue ? 'destructive' : 'outline'}

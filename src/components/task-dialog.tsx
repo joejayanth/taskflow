@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, History, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Task, Status } from '@/lib/types';
+import type { Task, Status, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -18,8 +18,6 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-  DialogClose,
-  DialogPortal,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -54,6 +52,7 @@ const taskSchema = z.object({
   priority: z.enum(['P0', 'P1', 'P2', 'P3']),
   dueDate: z.date({ required_error: 'A due date is required.' }),
   status: z.enum(['Yet to Start', 'WIP', 'In Review', 'Done']),
+  category: z.enum(['work', 'personal']).default('work'),
   blocked: z.boolean().optional(),
   reminderDate: z.date().optional(),
 });
@@ -107,6 +106,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
       priority: task?.priority || 'P2',
       dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
       status: initialStatus || task?.status || 'Yet to Start',
+      category: task?.category || 'work',
       blocked: task?.blocked || false,
       reminderDate: task?.reminderDate ? new Date(task.reminderDate) : undefined,
     },
@@ -120,6 +120,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: task.priority,
         dueDate: new Date(task.dueDate),
         status: task.status,
+        category: task.category,
         blocked: task.blocked,
         reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
       });
@@ -130,6 +131,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: 'P2',
         dueDate: new Date(),
         status: initialStatus || 'Yet to Start',
+        category: 'work',
         blocked: false,
         reminderDate: undefined,
       });
@@ -140,6 +142,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
     const newOrUpdatedTask: Task = {
       id: task?.id || crypto.randomUUID(),
       ...values,
+      category: values.category as Category,
       dueDate: values.dueDate,
       reminderDate: values.reminderDate,
       history: task ? (task.status !== values.status ? [...task.history, {status: values.status, timestamp: new Date()}] : task.history) : [{status: values.status, timestamp: new Date()}],
@@ -158,6 +161,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: 'P2',
         dueDate: new Date(),
         status: initialStatus || 'Yet to Start',
+        category: 'work',
         blocked: false,
         reminderDate: undefined,
       } : {
@@ -166,6 +170,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: task?.priority,
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
+        category: task?.category,
         blocked: task?.blocked,
         reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
       });
@@ -183,6 +188,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: task?.priority,
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
+        category: task?.category,
         blocked: task?.blocked,
         reminderDate: task?.reminderDate ? new Date(task.reminderDate) : undefined,
       });
@@ -331,24 +337,48 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
                           )}
                         />
                     </div>
-                     <FormField
-                        control={form.control}
-                        name="blocked"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Mark as Blocked</FormLabel>
-                                    <FormMessage />
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Category</FormLabel>
+                                        <p className="text-sm text-muted-foreground">
+                                            {field.value === 'work' ? 'Work' : 'Personal'}
+                                        </p>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value === 'personal'}
+                                            onCheckedChange={(checked) => field.onChange(checked ? 'personal' : 'work')}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
                         />
+                         <FormField
+                            control={form.control}
+                            name="blocked"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Blocked</FormLabel>
+                                         <p className="text-sm text-muted-foreground">
+                                            {field.value ? 'Yes' : 'No'}
+                                        </p>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                       <FormField
                         control={form.control}
                         name="reminderDate"
@@ -409,14 +439,18 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
                             <div><span className="font-semibold">Priority:</span> {getPriorityLabel(task?.priority)}</div>
                             <div><span className="font-semibold">Due:</span> {task && format(new Date(task.dueDate), 'PPP')}</div>
                         </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                             <div><span className="font-semibold">Category:</span> <span className="capitalize">{task?.category}</span></div>
+                             {task?.blocked && (
+                                <div className="font-semibold text-destructive">
+                                    This task is blocked.
+                                </div>
+                            )}
+                        </div>
+
                         {task?.reminderDate && (
                             <div className="text-sm">
                                 <span className="font-semibold">Reminder:</span> {format(new Date(task.reminderDate), 'PPP')}
-                            </div>
-                        )}
-                         {task?.blocked && (
-                            <div className="text-sm font-semibold text-destructive">
-                                This task is marked as blocked.
                             </div>
                         )}
                     </>
