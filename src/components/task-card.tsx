@@ -41,7 +41,7 @@ export function TaskCard({ task, onTaskUpdate, isOverlay }: TaskCardProps) {
   return (
     <div ref={setNodeRef} style={style} {...attributes} className={cn(isOverlay && "ring-2 ring-primary")}>
       <TaskDialog onSave={onTaskUpdate} task={task} trigger={
-        <Card className={cn("mb-3 hover:shadow-md transition-shadow duration-200 group rounded-md border-sketchy hover:ring-2 hover:ring-primary", isDragging && "opacity-50")}>
+        <Card className={cn("mb-3 hover:shadow-md transition-shadow duration-200 group rounded-lg border", isDragging && "opacity-50")}>
           <CardHeader className="p-3 pb-1">
              <div className="flex items-start justify-between">
                 <CardTitle className="text-base font-semibold leading-tight pr-4 cursor-pointer">{task.title}</CardTitle>

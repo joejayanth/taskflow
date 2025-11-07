@@ -40,11 +40,11 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
   return (
     <div
       className={cn(
-        'flex flex-col rounded-lg bg-card border-sketchy',
+        'flex flex-col rounded-lg bg-card border',
         isOver ? 'border-primary border-2' : ''
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b-2 border-foreground p-4">
+      <div className="flex items-center justify-between gap-2 border-b p-4">
         <div className="flex items-center gap-2">
             <span className={cn('h-2.5 w-2.5 rounded-full', config.color)} />
             <h2 className="font-semibold">{config.title}</h2>
