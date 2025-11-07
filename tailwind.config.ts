@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Fontdiner Swanky"', 'cursive'],
-        headline: ['"Fontdiner Swanky"', 'cursive'],
+        body: ['"Lacquer"', 'system-ui'],
+        headline: ['"Lacquer"', 'system-ui'],
         code: ['monospace'],
       },
       colors: {
