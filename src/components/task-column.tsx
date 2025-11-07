@@ -40,7 +40,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate }: TaskColumnProps) {
   return (
     <div
       className={cn(
-        'flex flex-col rounded-lg bg-card shadow-sm border',
+        'flex flex-col rounded-lg bg-card border',
         isOver ? 'border-primary border-2' : 'border'
       )}
     >
