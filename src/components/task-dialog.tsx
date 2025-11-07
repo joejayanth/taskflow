@@ -62,6 +62,7 @@ interface TaskDialogProps {
   trigger: React.ReactNode;
   onSave: (task: Task) => void;
   initialStatus?: Status;
+  initialCategory?: Category;
 }
 
 const linkify = (text: string) => {
@@ -85,7 +86,7 @@ const linkify = (text: string) => {
     })}</div>;
 };
 
-export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogProps) {
+export function TaskDialog({ task, trigger, onSave, initialStatus, initialCategory }: TaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(!task);
 
@@ -106,7 +107,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
       priority: task?.priority || 'P2',
       dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
       status: initialStatus || task?.status || 'Yet to Start',
-      category: task?.category || 'work',
+      category: initialCategory || task?.category || 'work',
       blocked: task?.blocked || false,
       reminderDate: task?.reminderDate ? new Date(task.reminderDate) : undefined,
     },
@@ -131,12 +132,12 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: 'P2',
         dueDate: new Date(),
         status: initialStatus || 'Yet to Start',
-        category: 'work',
+        category: initialCategory || 'work',
         blocked: false,
         reminderDate: undefined,
       });
     }
-  }, [task, form, initialStatus]);
+  }, [task, form, initialStatus, initialCategory]);
 
   const onSubmit = (values: z.infer<typeof taskSchema>) => {
     const newOrUpdatedTask: Task = {
@@ -162,7 +163,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         priority: 'P2',
         dueDate: new Date(),
         status: initialStatus || 'Yet to Start',
-        category: 'work',
+        category: initialCategory || 'work',
         blocked: false,
         reminderDate: undefined,
       } : {

@@ -57,6 +57,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryF
             <TaskDialog
                 onSave={onTaskUpdate}
                 initialStatus={status}
+                initialCategory={categoryFilter === 'all' ? 'work' : categoryFilter}
                 trigger={
                     <Button variant="ghost" size="sm" className="h-7 px-2">
                         <Plus className="h-4 w-4 mr-1" />

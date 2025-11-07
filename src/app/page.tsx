@@ -218,7 +218,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader onTaskCreate={handleTaskUpdate} />
+      <AppHeader onTaskCreate={handleTaskUpdate} categoryFilter={categoryFilter} />
       <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
