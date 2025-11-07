@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Lacquer"', 'system-ui'],
-        headline: ['"Lacquer"', 'system-ui'],
+        body: ['"Comic Neue"', 'system-ui'],
+        headline: ['"Comic Neue"', 'system-ui'],
         code: ['monospace'],
       },
       colors: {
