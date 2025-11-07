@@ -129,10 +129,10 @@ export default function Home() {
   }, [filteredTasks]);
 
   const handleTaskUpdate = (updatedTask: Task) => {
-    if (!user) return;
+    if (!user || !firestore) return;
     const taskRef = doc(firestore, 'users', user.uid, 'tasks', updatedTask.id);
     
-    const taskForFirestore = {
+    const taskForFirestore: any = {
       ...updatedTask,
       dueDate: updatedTask.dueDate.toISOString(),
       reminderDate: updatedTask.reminderDate ? updatedTask.reminderDate.toISOString() : null,
@@ -142,9 +142,8 @@ export default function Home() {
       }))
     };
     
-    // Firestore does not accept `undefined` so we delete the key instead.
+    // Firestore does not accept `undefined` so we must delete the key if it's nullish.
     if (!taskForFirestore.reminderDate) {
-      // @ts-ignore
       delete taskForFirestore.reminderDate;
     }
     

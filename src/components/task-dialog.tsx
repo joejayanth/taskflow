@@ -53,7 +53,7 @@ const taskSchema = z.object({
   dueDate: z.date({ required_error: 'A due date is required.' }),
   status: z.enum(['Yet to Start', 'WIP', 'In Review', 'Done']),
   category: z.enum(['work', 'personal']).default('work'),
-  blocked: z.boolean().optional(),
+  blocked: z.boolean().default(false),
   reminderDate: z.date().optional(),
 });
 
@@ -121,7 +121,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: new Date(task.dueDate),
         status: task.status,
         category: task.category,
-        blocked: task.blocked,
+        blocked: task.blocked || false,
         reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
       });
     } else {
@@ -142,6 +142,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
     const newOrUpdatedTask: Task = {
       id: task?.id || crypto.randomUUID(),
       ...values,
+      blocked: values.blocked || false,
       category: values.category as Category,
       dueDate: values.dueDate,
       reminderDate: values.reminderDate,
@@ -171,7 +172,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
         category: task?.category,
-        blocked: task?.blocked,
+        blocked: task?.blocked || false,
         reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
       });
     }
@@ -189,7 +190,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
         dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
         status: task?.status,
         category: task?.category,
-        blocked: task?.blocked,
+        blocked: task?.blocked || false,
         reminderDate: task?.reminderDate ? new Date(task.reminderDate) : undefined,
       });
     }
@@ -367,7 +368,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus }: TaskDialogP
                                         <FormLabel>Blocked</FormLabel>
                                          <p className="text-sm text-muted-foreground">
                                             {field.value ? 'Yes' : 'No'}
-                                        </p>
+                                         </p>
                                     </div>
                                     <FormControl>
                                         <Switch
