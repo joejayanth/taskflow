@@ -44,11 +44,11 @@ export function TaskCard({ task, onTaskUpdate, isOverlay, categoryFilter, status
 
   if (isDone) {
     return (
-      <div ref={setNodeRef} style={style} {...attributes} className={cn(isOverlay && "ring-2 ring-primary", "w-full")}>
+      <div ref={setNodeRef} style={style} {...attributes} className={cn(isOverlay && "ring-2 ring-primary")}>
         <TaskDialog onSave={onTaskUpdate} task={task} trigger={
           <Card className={cn("mb-3 hover:shadow-md transition-shadow duration-200 group rounded-lg border", isDragging && "opacity-50")}>
-            <div className="flex items-center justify-between p-3 cursor-pointer w-full overflow-hidden">
-              <CardTitle className="text-base font-normal leading-tight truncate whitespace-nowrap pr-2">{task.title}</CardTitle>
+            <div className="flex items-center justify-between p-3 cursor-pointer overflow-hidden">
+              <CardTitle className="text-base font-normal leading-tight truncate whitespace-nowrap flex-1 min-w-0 pr-2">{task.title}</CardTitle>
               <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab active:cursor-grabbing shrink-0" {...listeners} onClick={(e) => e.stopPropagation()}>
                   <GripVertical className="h-4 w-4 text-muted-foreground" />
               </Button>
