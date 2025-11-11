@@ -182,23 +182,32 @@ export default function Home() {
   
     if (activeId === overId) return;
   
-    const task = tasksWithDateObjects.find((t) => t.id === activeId);
+    const activeTask = tasksWithDateObjects.find((t) => t.id === activeId);
+    if (!activeTask) return;
   
-    const isOverAColumn = over.data.current?.type === 'Column';
+    // Determine the new status
+    let newStatus: Status | null = null;
+    const overDataType = over.data.current?.type;
   
-    if (task && isOverAColumn) {
-      const newStatus = over.data.current.status as Status;
-      if (task.status !== newStatus) {
-        const updatedTask: Task = {
-          ...task,
-          status: newStatus,
-          history: [
-            ...task.history,
-            { status: newStatus, timestamp: new Date() },
-          ],
-        };
-        handleTaskUpdate(updatedTask);
+    if (overDataType === 'Column') {
+      newStatus = over.data.current?.status;
+    } else if (overDataType === 'Task') {
+      const overTask = tasksWithDateObjects.find(t => t.id === overId);
+      if (overTask) {
+        newStatus = overTask.status;
       }
+    }
+  
+    if (newStatus && activeTask.status !== newStatus) {
+      const updatedTask: Task = {
+        ...activeTask,
+        status: newStatus,
+        history: [
+          ...activeTask.history,
+          { status: newStatus, timestamp: new Date() },
+        ],
+      };
+      handleTaskUpdate(updatedTask);
     }
   };
   
