@@ -42,6 +42,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryF
 
   return (
     <div
+      ref={setNodeRef}
       className={cn(
         'flex flex-col rounded-lg bg-card border',
         isOver ? 'border-primary border-2' : ''
@@ -69,12 +70,12 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryF
         </div>
       </div>
       <ScrollArea className="flex-1">
-        <div ref={setNodeRef} className="p-4 min-h-[400px]">
+        <div className="p-4 min-h-[400px]">
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.length > 0 ? (
               tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate} categoryFilter={categoryFilter} status={status} />)
             ) : (
-              <div className="flex h-40 items-center justify-center rounded-md border-2 border-dashed border-border">
+              <div className="flex h-full min-h-[350px] items-center justify-center rounded-md border-2 border-dashed border-border">
                 <p className="text-sm text-muted-foreground">Drop tasks here</p>
               </div>
             )}
