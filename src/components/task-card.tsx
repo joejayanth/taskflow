@@ -46,10 +46,10 @@ export function TaskCard({ task, onTaskUpdate, isOverlay, categoryFilter, status
     return (
       <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-3", isOverlay && "ring-2 ring-primary")}>
         <Card className={cn("hover:shadow-md transition-shadow duration-200 group rounded-lg border", isDragging && "opacity-50")}>
-            <div className="flex items-center justify-between p-3">
+            <div className="flex items-center justify-between p-3 gap-2">
               <TaskDialog onSave={onTaskUpdate} task={task} trigger={
                   <div className="flex-1 min-w-0 cursor-pointer">
-                    <p className="text-base font-normal leading-tight truncate">{task.title}</p>
+                    <p className="text-base font-normal leading-tight">{task.title}</p>
                   </div>
               } />
               <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab active:cursor-grabbing shrink-0" {...listeners} onClick={(e) => e.stopPropagation()}>
