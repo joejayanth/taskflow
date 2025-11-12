@@ -198,15 +198,15 @@ export function TaskDialog({ task, trigger, onSave, initialStatus, initialCatego
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange} modal={false}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent 
-        className="sm:max-w-[625px]"
+        className="sm:max-w-[625px] grid-rows-[auto,1fr,auto] p-0 max-h-[90vh]"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-rows-[auto,1fr,auto] h-full max-h-[90vh]">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>
                 {isEditing ? (
                   <FormField
@@ -232,7 +232,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus, initialCatego
               </DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto px-6">
                  {isEditing ? (
                     <>
                     <FormField
@@ -457,26 +457,26 @@ export function TaskDialog({ task, trigger, onSave, initialStatus, initialCatego
                         )}
                     </>
                  )}
-            </div>
             
-            {task && (
-                <div className="space-y-2">
-                    <h4 className="flex items-center gap-2 text-sm font-semibold"><History className="h-4 w-4"/> Status History</h4>
-                    <Separator />
-                    <ul className="space-y-1 text-xs text-muted-foreground max-h-24 overflow-y-auto">
-                        {task.history.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((h, i) => (
-                            <li key={i}>{format(new Date(h.timestamp), 'MMM d, yyyy, h:mm a')}: Status changed to <strong>{h.status}</strong></li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+                {task && (
+                    <div className="space-y-2 pt-2">
+                        <h4 className="flex items-center gap-2 text-sm font-semibold"><History className="h-4 w-4"/> Status History</h4>
+                        <Separator />
+                        <ul className="space-y-1 text-xs text-muted-foreground max-h-24 overflow-y-auto">
+                            {task.history.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((h, i) => (
+                                <li key={i}>{format(new Date(h.timestamp), 'MMM d, yyyy, h:mm a')}: Status changed to <strong>{h.status}</strong></li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
 
-            {isEditing && (
-              <DialogFooter>
+            {isEditing ? (
+              <DialogFooter className="p-6 pt-2">
                   <Button type="button" variant="secondary" onClick={handleCancel}>Cancel</Button>
                 <Button type="submit">Save</Button>
               </DialogFooter>
-            )}
+            ) : <div className="h-14"></div>}
           </form>
         </Form>
       </DialogContent>
