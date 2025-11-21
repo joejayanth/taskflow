@@ -11,9 +11,10 @@ import { ScrollArea } from "./ui/scroll-area";
 interface RemindersProps {
   tasks: Task[];
   onTaskUpdate: (task: Task) => void;
+  onTaskDelete: (task: Task) => void;
 }
 
-export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
+export function Reminders({ tasks, onTaskUpdate, onTaskDelete }: RemindersProps) {
   return (
     <Card className="bg-accent/20 border-accent/40 shadow-sm">
       <CardHeader className="py-4">
@@ -30,6 +31,7 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
                 key={task.id}
                 task={task}
                 onSave={onTaskUpdate}
+                onDelete={onTaskDelete}
                 trigger={
                     <div className="group cursor-pointer rounded-md p-2 hover:bg-accent/40">
                     <p className="font-semibold group-hover:text-primary truncate pr-4">{task.title}</p>
@@ -47,3 +49,5 @@ export function Reminders({ tasks, onTaskUpdate }: RemindersProps) {
     </Card>
   );
 }
+
+    

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { CSS } from '@dnd-kit/utilities';
@@ -17,12 +16,13 @@ import { cn } from '@/lib/utils';
 interface TaskCardProps {
   task: Task;
   onTaskUpdate: (task: Task) => void;
+  onTaskDelete?: (task: Task) => void;
   isOverlay?: boolean;
   categoryFilter: Category | 'all';
   status: Status;
 }
 
-export function TaskCard({ task, onTaskUpdate, isOverlay, categoryFilter, status }: TaskCardProps) {
+export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, categoryFilter, status }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -44,26 +44,26 @@ export function TaskCard({ task, onTaskUpdate, isOverlay, categoryFilter, status
 
   if (isDone) {
     return (
-      <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-3", isOverlay && "ring-2 ring-primary")}>
-        <Card className={cn("hover:shadow-md transition-shadow duration-200 group rounded-lg border", isDragging && "opacity-50")}>
-            <div className="flex items-center justify-between p-3 gap-2">
-              <TaskDialog onSave={onTaskUpdate} task={task} trigger={
-                  <div className="flex-1 min-w-0 cursor-pointer">
-                    <p className="text-base font-normal leading-tight">{task.title}</p>
-                  </div>
-              } />
-              <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab active:cursor-grabbing shrink-0" {...listeners} onClick={(e) => e.stopPropagation()}>
-                  <GripVertical className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </div>
-          </Card>
-      </div>
+        <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-3", isOverlay && "ring-2 ring-primary")}>
+            <Card className={cn("hover:shadow-md transition-shadow duration-200 group rounded-lg border", isDragging && "opacity-50")}>
+                <div className="flex items-center justify-between p-3 gap-2">
+                    <TaskDialog onSave={onTaskUpdate} onDelete={onTaskDelete} task={task} trigger={
+                        <div className="flex-1 min-w-0 cursor-pointer">
+                            <p className="text-base font-normal leading-tight whitespace-normal">{task.title}</p>
+                        </div>
+                    } />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab active:cursor-grabbing shrink-0" {...listeners} onClick={(e) => e.stopPropagation()}>
+                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                </div>
+            </Card>
+        </div>
     )
   }
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} className={cn(isOverlay && "ring-2 ring-primary")}>
-      <TaskDialog onSave={onTaskUpdate} task={task} trigger={
+      <TaskDialog onSave={onTaskUpdate} onDelete={onTaskDelete} task={task} trigger={
         <Card className={cn("mb-3 hover:shadow-md transition-shadow duration-200 group rounded-lg border", isDragging && "opacity-50")}>
           <CardHeader className="p-3 pb-1">
              <div className="flex items-start justify-between">
@@ -94,3 +94,5 @@ export function TaskCard({ task, onTaskUpdate, isOverlay, categoryFilter, status
     </div>
   );
 }
+
+    

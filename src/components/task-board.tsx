@@ -8,11 +8,12 @@ interface TaskBoardProps {
   statuses: Status[];
   tasksByStatus: { [key in Status]: Task[] };
   onTaskUpdate: (task: Task) => void;
+  onTaskDelete: (task: Task) => void;
   onDeleteAllDone: (tasks: Task[]) => void;
   categoryFilter: Category | 'all';
 }
 
-export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onDeleteAllDone, categoryFilter }: TaskBoardProps) {
+export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onTaskDelete, onDeleteAllDone, categoryFilter }: TaskBoardProps) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {statuses.map(status => (
@@ -21,6 +22,7 @@ export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onDeleteAllDo
           status={status}
           tasks={tasksByStatus[status]}
           onTaskUpdate={onTaskUpdate}
+          onTaskDelete={onTaskDelete}
           onDeleteAll={status === 'Done' ? onDeleteAllDone : undefined}
           categoryFilter={categoryFilter}
         />
@@ -28,3 +30,5 @@ export function TaskBoard({ statuses, tasksByStatus, onTaskUpdate, onDeleteAllDo
     </div>
   );
 }
+
+    

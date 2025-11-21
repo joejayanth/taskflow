@@ -16,6 +16,7 @@ interface TaskColumnProps {
   status: Status;
   tasks: Task[];
   onTaskUpdate: (task: Task) => void;
+  onTaskDelete: (task: Task) => void;
   onDeleteAll?: (tasks: Task[]) => void;
   categoryFilter: Category | 'all';
 }
@@ -28,7 +29,7 @@ const statusConfig: Record<Status, { color: string, title: string }> = {
 };
 
 
-export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryFilter }: TaskColumnProps) {
+export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDeleteAll, categoryFilter }: TaskColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: status,
     data: {
@@ -73,7 +74,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryF
         <div className="p-4 min-h-[400px]">
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.length > 0 ? (
-              tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate} categoryFilter={categoryFilter} status={status} />)
+              tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} categoryFilter={categoryFilter} status={status} />)
             ) : (
               <div className="flex h-full min-h-[350px] items-center justify-center rounded-md border-2 border-dashed border-border">
                 <p className="text-sm text-muted-foreground">Drop tasks here</p>
@@ -85,3 +86,5 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onDeleteAll, categoryF
     </div>
   );
 }
+
+    

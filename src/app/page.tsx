@@ -10,10 +10,11 @@ import { TaskBoard } from '@/components/task-board';
 import { FocusRecommendation } from '@/components/focus-recommendation';
 import { Reminders } from '@/components/reminders';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch, deleteDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { TaskCard } from '@/components/task-card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const statuses: Status[] = ['Yet to Start', 'WIP', 'In Review', 'Done'];
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
@@ -150,6 +151,12 @@ export default function Home() {
     setDocumentNonBlocking(taskRef, taskForFirestore, { merge: true });
   };
 
+  const handleTaskDelete = (taskToDelete: Task) => {
+    if (!user || !firestore) return;
+    const taskRef = doc(firestore, 'users', user.uid, 'tasks', taskToDelete.id);
+    deleteDocumentNonBlocking(taskRef);
+  };
+
   const handleDeleteAllDone = (tasksToDelete: Task[]) => {
     if (!user || !firestore) return;
 
@@ -232,11 +239,11 @@ export default function Home() {
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
             <div className={hasReminders ? "lg:col-span-2" : "lg:col-span-4"}>
-              <FocusRecommendation tasks={filteredTasks as Task[]} onTaskUpdate={handleTaskUpdate} />
+              <FocusRecommendation tasks={filteredTasks as Task[]} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete}/>
             </div>
             {hasReminders && (
               <div className="lg:col-span-2">
-                <Reminders tasks={reminderTasks} onTaskUpdate={handleTaskUpdate} />
+                <Reminders tasks={reminderTasks} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete} />
               </div>
             )}
           </div>
@@ -256,16 +263,18 @@ export default function Home() {
               onDragEnd={handleDragEnd} 
               onDragCancel={handleDragCancel}
             >
-              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
+              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
                <DragOverlay>
                 {activeTask ? <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay categoryFilter={categoryFilter} status={activeTask.status} /> : null}
               </DragOverlay>
             </DndContext>
           ) : (
-            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
+            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
           )}
         </div>
       </div>
     </div>
   );
 }
+
+    

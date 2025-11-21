@@ -45,6 +45,7 @@ import { Separator } from './ui/separator';
 import { getPriorityLabel } from './priority-icon';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -61,6 +62,7 @@ interface TaskDialogProps {
   task?: Task;
   trigger: React.ReactNode;
   onSave: (task: Task) => void;
+  onDelete?: (task: Task) => void;
   initialStatus?: Status;
   initialCategory?: Category;
 }
@@ -86,7 +88,7 @@ const linkify = (text: string) => {
     })}</div>;
 };
 
-export function TaskDialog({ task, trigger, onSave, initialStatus, initialCategory }: TaskDialogProps) {
+export function TaskDialog({ task, trigger, onSave, onDelete, initialStatus, initialCategory }: TaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(!task);
 
@@ -153,6 +155,13 @@ export function TaskDialog({ task, trigger, onSave, initialStatus, initialCatego
     setIsOpen(false);
   };
   
+  const handleDelete = () => {
+    if (task && onDelete) {
+        onDelete(task);
+        setIsOpen(false);
+    }
+  }
+
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
@@ -418,6 +427,7 @@ export function TaskDialog({ task, trigger, onSave, initialStatus, initialCatego
                               </Popover>
                               {field.value && (
                                 <Button
+                                  type="button"
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => field.onChange(undefined)}
@@ -471,12 +481,40 @@ export function TaskDialog({ task, trigger, onSave, initialStatus, initialCatego
                 )}
             </div>
 
-            {isEditing ? (
-              <DialogFooter className="p-6 pt-2">
-                  <Button type="button" variant="secondary" onClick={handleCancel}>Cancel</Button>
-                <Button type="submit">Save</Button>
-              </DialogFooter>
-            ) : <div className="h-14"></div>}
+            <DialogFooter className="p-6 pt-4 flex justify-between">
+                <div>
+                {!isNewTask && isEditing && onDelete && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button type="button" variant="destructive" className="mr-auto">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this task.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
+                </div>
+                {isEditing ? (
+                    <div className="flex gap-2">
+                        <Button type="button" variant="secondary" onClick={handleCancel}>Cancel</Button>
+                        <Button type="submit">Save</Button>
+                    </div>
+                ) : <div className="h-10"></div>}
+          </DialogFooter>
           </form>
         </Form>
       </DialogContent>

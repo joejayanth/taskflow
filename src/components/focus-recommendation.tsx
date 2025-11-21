@@ -14,6 +14,7 @@ import { Badge } from "./ui/badge";
 interface FocusRecommendationProps {
   tasks: Task[];
   onTaskUpdate: (task: Task) => void;
+  onTaskDelete: (task: Task) => void;
 }
 
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
@@ -74,7 +75,7 @@ const getTaskSortScore = (task: Task): number => {
 };
 
 
-export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendationProps) {
+export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: FocusRecommendationProps) {
   const recommendedTasks = useMemo(() => {
     const activeAndDueSoonTasks = tasks.filter(task => 
         task.status !== 'Done' && isDueSoon(new Date(task.dueDate))
@@ -113,6 +114,7 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
                     key={task.id}
                     task={task}
                     onSave={onTaskUpdate}
+                    onDelete={onTaskDelete}
                     trigger={
                         <div className="group cursor-pointer rounded-md p-2 hover:bg-primary/20">
                             <div className="flex items-center justify-between">
@@ -141,3 +143,5 @@ export function FocusRecommendation({ tasks, onTaskUpdate }: FocusRecommendation
     </Card>
   );
 }
+
+    
