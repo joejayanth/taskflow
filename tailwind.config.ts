@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"Comic Neue"', 'system-ui'],
-        headline: ['"Comic Neue"', 'system-ui'],
+        body: ['"Nunito"', 'system-ui'],
+        headline: ['"Nunito"', 'system-ui'],
         code: ['monospace'],
       },
       colors: {
