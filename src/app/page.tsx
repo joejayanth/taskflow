@@ -116,15 +116,29 @@ export default function Home() {
     
     // Sort tasks in each column
     for (const status in grouped) {
-      grouped[status as Status].sort((a, b) => {
-        // Sort by priority first
-        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-        if (priorityDiff !== 0) {
-          return priorityDiff;
-        }
-        // Then by due date (earlier first)
-        return a.dueDate.getTime() - b.dueDate.getTime();
-      });
+      const s = status as Status;
+      if (s === 'Done') {
+        grouped[s].sort((a, b) => {
+          const aDoneDate = a.history.filter(h => h.status === 'Done').reduce((latest, h) => !latest || new Date(h.timestamp) > latest ? new Date(h.timestamp) : latest, null as Date | null);
+          const bDoneDate = b.history.filter(h => h.status === 'Done').reduce((latest, h) => !latest || new Date(h.timestamp) > latest ? new Date(h.timestamp) : latest, null as Date | null);
+          if (aDoneDate && bDoneDate) {
+            return bDoneDate.getTime() - aDoneDate.getTime();
+          }
+          if (aDoneDate) return -1;
+          if (bDoneDate) return 1;
+          return 0;
+        });
+      } else {
+        grouped[s].sort((a, b) => {
+          // Sort by priority first
+          const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+          if (priorityDiff !== 0) {
+            return priorityDiff;
+          }
+          // Then by due date (earlier first)
+          return a.dueDate.getTime() - b.dueDate.getTime();
+        });
+      }
     }
     return grouped;
   }, [filteredTasks]);
