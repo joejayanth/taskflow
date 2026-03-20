@@ -1,12 +1,11 @@
-
 "use client";
 
 import { useMemo } from "react";
-import type { Task, Priority, Status } from "@/lib/types";
-import { Lightbulb } from "lucide-react";
+import type { Task, Priority } from "@/lib/types";
+import { Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityIcon, getPriorityLabel } from "./priority-icon";
-import { format, isPast, differenceInCalendarDays, isToday, getDay, addDays } from "date-fns";
+import { format, isToday, getDay, addDays } from "date-fns";
 import { TaskDialog } from "./task-dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { Badge } from "./ui/badge";
@@ -26,7 +25,7 @@ const isBusinessDay = (date: Date) => {
 
 const getNextTwoBusinessDays = () => {
     let businessDays: Date[] = [];
-    let date = addDays(new Date(), 1); // Start from tomorrow
+    let date = addDays(new Date(), 1);
 
     while(businessDays.length < 2) {
         if(isBusinessDay(date)) {
@@ -44,13 +43,8 @@ const isDueSoon = (dueDate: Date): boolean => {
   const due = new Date(dueDate);
   due.setHours(0, 0, 0, 0);
 
-  if (due.getTime() < today.getTime()) {
-      return true; // Overdue
-  }
-  
-  if (isToday(due)) {
-      return true; // Due today
-  }
+  if (due.getTime() < today.getTime()) return true;
+  if (isToday(due)) return true;
 
   const nextTwoBusinessDays = getNextTwoBusinessDays();
   const nextBizDay1 = nextTwoBusinessDays[0];
@@ -63,7 +57,7 @@ const isDueSoon = (dueDate: Date): boolean => {
 
 const getTaskSortScore = (task: Task): number => {
     const imminent = isDueSoon(new Date(task.dueDate));
-    const baseScore = imminent ? 0 : 10; // Prioritize imminent tasks
+    const baseScore = imminent ? 0 : 10;
 
     if (task.priority === 'P0' && task.status === 'Yet to Start') return baseScore + 0;
     if (task.priority === 'P0' && task.status === 'WIP') return baseScore + 1;
@@ -74,7 +68,6 @@ const getTaskSortScore = (task: Task): number => {
     return baseScore + 5 + priorityOrder[task.priority];
 };
 
-
 export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: FocusRecommendationProps) {
   const recommendedTasks = useMemo(() => {
     const activeAndDueSoonTasks = tasks.filter(task => 
@@ -84,29 +77,21 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
     return activeAndDueSoonTasks.sort((a, b) => {
         const scoreA = getTaskSortScore(a);
         const scoreB = getTaskSortScore(b);
-
-        if (scoreA !== scoreB) {
-            return scoreA - scoreB;
-        }
-
-        // If scores are the same, use due date as a tie-breaker
-        const aDueDate = a.dueDate instanceof Date ? a.dueDate : new Date(a.dueDate);
-        const bDueDate = b.dueDate instanceof Date ? b.dueDate : new Date(b.dueDate);
-        return aDueDate.getTime() - bDueDate.getTime();
-
+        if (scoreA !== scoreB) return scoreA - scoreB;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     }).slice(0, 3);
   }, [tasks]);
 
   return (
-    <Card className="bg-primary/10 border-primary/40 shadow-sm">
-      <CardHeader className="py-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Lightbulb className="h-5 w-5 text-primary" />
-          <span>Focus Recommendations</span>
+    <Card className="bg-primary/5 border-primary/20 shadow-none overflow-hidden rounded-xl">
+      <CardHeader className="py-3 px-4 bg-primary/10 border-b border-primary/10">
+        <CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-primary">
+          <Zap className="h-4 w-4 fill-primary" />
+          <span>Priority Focus</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 pb-4">
-        <ScrollArea className="h-[124px]">
+      <CardContent className="p-2">
+        <ScrollArea className="h-[136px]">
             {recommendedTasks.length > 0 ? (
                 <div className="space-y-1">
                 {recommendedTasks.map(task => (
@@ -116,16 +101,15 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
                     onSave={onTaskUpdate}
                     onDelete={onTaskDelete}
                     trigger={
-                        <div className="group cursor-pointer rounded-md p-2 hover:bg-primary/20">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-base font-semibold truncate pr-4 group-hover:text-primary">{task.title}</h3>
-                                <div className="flex items-center space-x-2 text-sm text-muted-foreground flex-shrink-0">
-                                    <Badge variant="outline" className="hidden sm:inline-flex">{task.status}</Badge>
-                                    <div className="flex items-center gap-1">
-                                        <PriorityIcon priority={task.priority} className="h-4 w-4" />
-                                        <span className="hidden sm:inline-block">{getPriorityLabel(task.priority)}</span>
+                        <div className="group cursor-pointer rounded-lg p-2.5 transition-colors hover:bg-primary/10">
+                            <div className="flex items-center justify-between gap-4">
+                                <h3 className="text-[14px] font-bold truncate flex-1 group-hover:text-primary">{task.title}</h3>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <div className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+                                        <PriorityIcon priority={task.priority} className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline-block">Due {format(new Date(task.dueDate), "MMM d")}</span>
                                     </div>
-                                    <span>Due: {format(new Date(task.dueDate), "MMM d")}</span>
+                                    <Badge variant="outline" className="h-5 text-[10px] font-bold uppercase tracking-wider bg-background/50 border-none px-2">{task.status}</Badge>
                                 </div>
                             </div>
                         </div>
@@ -134,8 +118,8 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
                 ))}
                 </div>
             ) : (
-                <div className="flex h-[124px] items-center justify-center">
-                    <p className="text-muted-foreground">No urgent tasks due soon. Great job!</p>
+                <div className="flex h-[136px] items-center justify-center px-6 text-center">
+                    <p className="text-sm font-medium text-muted-foreground/60">Your focus list is clear. Ready for new challenges?</p>
                 </div>
             )}
         </ScrollArea>
@@ -143,5 +127,3 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
     </Card>
   );
 }
-
-    

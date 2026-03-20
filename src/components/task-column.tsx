@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useDroppable } from '@dnd-kit/core';
@@ -21,13 +20,12 @@ interface TaskColumnProps {
   categoryFilter: Category | 'all';
 }
 
-const statusConfig: Record<Status, { color: string, title: string }> = {
-  'Yet to Start': { color: 'bg-gray-500', title: 'Yet to Start' },
-  'WIP': { color: 'bg-blue-500', title: 'Work in Progress' },
-  'In Review': { color: 'bg-purple-500', title: 'In Review' },
-  'Done': { color: 'bg-green-500', title: 'Done' },
+const statusConfig: Record<Status, { color: string, title: string, bg: string }> = {
+  'Yet to Start': { color: 'bg-slate-400', title: 'To Do', bg: 'bg-slate-50/50' },
+  'WIP': { color: 'bg-blue-500', title: 'In Progress', bg: 'bg-blue-50/30' },
+  'In Review': { color: 'bg-amber-500', title: 'Review', bg: 'bg-amber-50/30' },
+  'Done': { color: 'bg-emerald-500', title: 'Completed', bg: 'bg-emerald-50/30' },
 };
-
 
 export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDeleteAll, categoryFilter }: TaskColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
@@ -45,39 +43,40 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col rounded-lg bg-card border',
-        isOver ? 'border-primary border-2' : ''
+        'flex flex-col rounded-xl border border-border/60 transition-colors duration-200 h-full',
+        config.bg,
+        isOver ? 'ring-2 ring-primary ring-offset-2' : ''
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b p-4">
-        <div className="flex items-center gap-2">
-            <span className={cn('h-2.5 w-2.5 rounded-full', config.color)} />
-            <h2 className="font-semibold">{config.title}</h2>
-            <span className="text-sm text-muted-foreground">{tasks.length}</span>
+      <div className="flex items-center justify-between gap-2 p-4 pb-2">
+        <div className="flex items-center gap-2.5">
+          <span className={cn('h-2 w-2 rounded-full', config.color)} />
+          <h2 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{config.title}</h2>
+          <Badge variant="secondary" className="font-bold bg-muted/60 text-[11px] px-1.5 h-5 min-w-[20px] flex justify-center">{tasks.length}</Badge>
         </div>
         <div className="flex items-center gap-1">
-            <TaskDialog
-                onSave={onTaskUpdate}
-                initialStatus={status}
-                initialCategory={categoryFilter === 'all' ? 'work' : categoryFilter}
-                trigger={
-                    <Button variant="ghost" size="sm" className="h-7 px-2">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add
-                    </Button>
-                }
-            />
-            {status === 'Done' && onDeleteAll && <DoneColumnActions tasks={tasks} onDeleteAll={onDeleteAll} />}
+          <TaskDialog
+            onSave={onTaskUpdate}
+            initialStatus={status}
+            initialCategory={categoryFilter === 'all' ? 'work' : categoryFilter}
+            trigger={
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted/80 rounded-full">
+                <Plus className="h-4 w-4" />
+                <span className="sr-only">Add task to {config.title}</span>
+              </Button>
+            }
+          />
+          {status === 'Done' && onDeleteAll && <DoneColumnActions tasks={tasks} onDeleteAll={onDeleteAll} />}
         </div>
       </div>
       <ScrollArea className="flex-1">
-        <div className="p-4 min-h-[400px]">
+        <div className="p-3 min-h-[400px]">
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.length > 0 ? (
               tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} categoryFilter={categoryFilter} status={status} />)
             ) : (
-              <div className="flex h-full min-h-[350px] items-center justify-center rounded-md border-2 border-dashed border-border">
-                <p className="text-sm text-muted-foreground">Drop tasks here</p>
+              <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-muted/40 opacity-40">
+                <p className="text-xs font-semibold uppercase tracking-widest">No Tasks</p>
               </div>
             )}
           </SortableContext>
@@ -87,4 +86,4 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
   );
 }
 
-    
+import { Badge } from './ui/badge';
