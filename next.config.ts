@@ -1,8 +1,8 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'export',          // Static HTML export
-  trailingSlash: true,       // Required for GitHub Pages routing
+  output: 'export',          // Static HTML export for Firebase Hosting
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
