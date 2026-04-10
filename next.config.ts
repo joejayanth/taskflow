@@ -1,7 +1,11 @@
 import type {NextConfig} from 'next';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'export',          // Static HTML export
+  basePath: isProd ? '/taskflow' : '',
+  trailingSlash: true,       // Required for GitHub Pages routing
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -9,6 +13,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    unoptimized: true,       // Required for static export
     remotePatterns: [
       {
         protocol: 'https',
