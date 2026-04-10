@@ -1,10 +1,7 @@
 import type {NextConfig} from 'next';
 
-const isProd = process.env.NODE_ENV === 'production';
-
 const nextConfig: NextConfig = {
   output: 'export',          // Static HTML export
-  basePath: isProd ? '/taskflow' : '',
   trailingSlash: true,       // Required for GitHub Pages routing
   typescript: {
     ignoreBuildErrors: true,
