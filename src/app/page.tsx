@@ -9,12 +9,12 @@ import { AppHeader } from '@/components/app-header';
 import { TaskBoard } from '@/components/task-board';
 import { FocusRecommendation } from '@/components/focus-recommendation';
 import { Reminders } from '@/components/reminders';
+import { TaskStats } from '@/components/task-stats';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch, deleteDoc } from 'firebase/firestore';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc, writeBatch } from 'firebase/firestore';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { TaskCard } from '@/components/task-card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const statuses: Status[] = ['Yet to Start', 'WIP', 'In Review', 'Done'];
 const priorityOrder: Record<Priority, number> = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
@@ -24,15 +24,16 @@ export default function Home() {
   const firestore = useFirestore();
   const router = useRouter();
 
-  const tasksQuery = useMemoFirebase(() => 
-    user ? collection(firestore, 'users', user.uid, 'tasks') : null, 
+  const tasksQuery = useMemoFirebase(() =>
+    user ? collection(firestore, 'users', user.uid, 'tasks') : null,
     [user, firestore]
   );
-  
+
   const { data: tasks, isLoading: areTasksLoading } = useCollection<Omit<Task, 'id'>>(tasksQuery);
   const [isClient, setIsClient] = useState(false);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -54,7 +55,7 @@ export default function Home() {
     const filterValue = value as Category | 'all';
     setCategoryFilter(filterValue);
     localStorage.setItem('taskCategoryFilter', filterValue);
-  }
+  };
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -67,35 +68,38 @@ export default function Home() {
     return tasks.map(task => ({
       ...task,
       dueDate: new Date(task.dueDate),
-      history: task.history.map(h => ({...h, timestamp: new Date(h.timestamp)})),
+      history: task.history.map(h => ({ ...h, timestamp: new Date(h.timestamp) })),
       reminderDate: task.reminderDate ? new Date(task.reminderDate) : undefined,
     }));
   }, [tasks]);
 
-  const filteredTasks = useMemo(() => {
-    if (categoryFilter === 'all') {
-      return tasksWithDateObjects;
-    }
+  // Filter by category
+  const categoryFilteredTasks = useMemo(() => {
+    if (categoryFilter === 'all') return tasksWithDateObjects;
     return tasksWithDateObjects.filter(task => task.category === categoryFilter);
   }, [tasksWithDateObjects, categoryFilter]);
+
+  // Filter by search query
+  const filteredTasks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return categoryFilteredTasks;
+    return categoryFilteredTasks.filter(task =>
+      task.title.toLowerCase().includes(q) ||
+      (task.description && task.description.toLowerCase().includes(q))
+    );
+  }, [categoryFilteredTasks, searchQuery]);
 
   const reminderTasks = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return (filteredTasks as Task[]).filter(task => {
-      if (task.status === 'Done' || !task.reminderDate) {
-        return false;
-      }
+      if (task.status === 'Done' || !task.reminderDate) return false;
       const reminderDate = new Date(task.reminderDate);
       reminderDate.setHours(0, 0, 0, 0);
-      
       const dueDate = new Date(task.dueDate);
       dueDate.setHours(0, 0, 0, 0);
-      
-      const shouldRemind = reminderDate.getTime() <= today.getTime() && today.getTime() < dueDate.getTime();
-
-      return shouldRemind;
+      return reminderDate.getTime() <= today.getTime() && today.getTime() < dueDate.getTime();
     });
   }, [filteredTasks]);
 
@@ -113,29 +117,22 @@ export default function Home() {
         }
       });
     }
-    
-    // Sort tasks in each column
+
     for (const status in grouped) {
       const s = status as Status;
       if (s === 'Done') {
         grouped[s].sort((a, b) => {
           const aDoneDate = a.history.filter(h => h.status === 'Done').reduce((latest, h) => !latest || new Date(h.timestamp) > latest ? new Date(h.timestamp) : latest, null as Date | null);
           const bDoneDate = b.history.filter(h => h.status === 'Done').reduce((latest, h) => !latest || new Date(h.timestamp) > latest ? new Date(h.timestamp) : latest, null as Date | null);
-          if (aDoneDate && bDoneDate) {
-            return bDoneDate.getTime() - aDoneDate.getTime();
-          }
+          if (aDoneDate && bDoneDate) return bDoneDate.getTime() - aDoneDate.getTime();
           if (aDoneDate) return -1;
           if (bDoneDate) return 1;
           return 0;
         });
       } else {
         grouped[s].sort((a, b) => {
-          // Sort by priority first
           const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-          if (priorityDiff !== 0) {
-            return priorityDiff;
-          }
-          // Then by due date (earlier first)
+          if (priorityDiff !== 0) return priorityDiff;
           return a.dueDate.getTime() - b.dueDate.getTime();
         });
       }
@@ -146,7 +143,7 @@ export default function Home() {
   const handleTaskUpdate = (updatedTask: Task) => {
     if (!user || !firestore) return;
     const taskRef = doc(firestore, 'users', user.uid, 'tasks', updatedTask.id);
-    
+
     const taskForFirestore: any = {
       ...updatedTask,
       dueDate: updatedTask.dueDate.toISOString(),
@@ -156,12 +153,11 @@ export default function Home() {
         timestamp: h.timestamp.toISOString()
       }))
     };
-    
-    // Firestore does not accept `undefined` so we must delete the key if it's nullish.
+
     if (!taskForFirestore.reminderDate) {
       delete taskForFirestore.reminderDate;
     }
-    
+
     setDocumentNonBlocking(taskRef, taskForFirestore, { merge: true });
   };
 
@@ -173,52 +169,44 @@ export default function Home() {
 
   const handleDeleteAllDone = (tasksToDelete: Task[]) => {
     if (!user || !firestore) return;
-
     const batch = writeBatch(firestore);
     tasksToDelete.forEach(task => {
-        const taskRef = doc(firestore, 'users', user.uid, 'tasks', task.id);
-        batch.delete(taskRef);
+      const taskRef = doc(firestore, 'users', user.uid, 'tasks', task.id);
+      batch.delete(taskRef);
     });
     batch.commit().catch(err => {
-        console.error("Failed to delete all done tasks:", err);
-    })
+      console.error("Failed to delete all done tasks:", err);
+    });
   };
-  
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const task = tasksWithDateObjects.find(t => t.id === active.id);
-    if (task) {
-      setActiveTask(task as Task);
-    }
+    if (task) setActiveTask(task as Task);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveTask(null);
     const { active, over } = event;
-  
     if (!over) return;
-  
+
     const activeId = active.id;
     const overId = over.id;
-  
     if (activeId === overId) return;
-  
+
     const activeTask = tasksWithDateObjects.find((t) => t.id === activeId);
     if (!activeTask) return;
-  
-    // Determine the new status
+
     let newStatus: Status | null = null;
     const overDataType = over.data.current?.type;
-  
+
     if (overDataType === 'Column') {
       newStatus = over.data.current?.status;
     } else if (overDataType === 'Task') {
       const overTask = tasksWithDateObjects.find(t => t.id === overId);
-      if (overTask) {
-        newStatus = overTask.status;
-      }
+      if (overTask) newStatus = overTask.status;
     }
-  
+
     if (newStatus && activeTask.status !== newStatus) {
       const updatedTask: Task = {
         ...activeTask,
@@ -231,15 +219,18 @@ export default function Home() {
       handleTaskUpdate(updatedTask);
     }
   };
-  
+
   const handleDragCancel = () => {
     setActiveTask(null);
   };
 
   if (isUserLoading || areTasksLoading || !user) {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center">
-        <div className="text-lg">Loading your tasks...</div>
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary animate-pulse">
+          <span className="text-primary-foreground text-lg font-bold">T</span>
+        </div>
+        <div className="text-sm text-muted-foreground">Loading your tasks…</div>
       </div>
     );
   }
@@ -248,12 +239,22 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader onTaskCreate={handleTaskUpdate} categoryFilter={categoryFilter} />
+      <AppHeader
+        onTaskCreate={handleTaskUpdate}
+        categoryFilter={categoryFilter}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
       <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        <div className="mx-auto max-w-7xl space-y-5">
+
+          {/* Stats Bar */}
+          <TaskStats tasks={categoryFilteredTasks as Task[]} />
+
+          {/* Focus + Reminders row */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-4">
             <div className={hasReminders ? "lg:col-span-2" : "lg:col-span-4"}>
-              <FocusRecommendation tasks={filteredTasks as Task[]} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete}/>
+              <FocusRecommendation tasks={filteredTasks as Task[]} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete} />
             </div>
             {hasReminders && (
               <div className="lg:col-span-2">
@@ -261,34 +262,59 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className="flex justify-end">
+
+          {/* Filter + search hint row */}
+          <div className="flex items-center justify-between">
+            {searchQuery ? (
+              <p className="text-sm text-muted-foreground">
+                Showing <span className="font-semibold text-foreground">{filteredTasks.length}</span> result{filteredTasks.length !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
+              </p>
+            ) : (
+              <div />
+            )}
             <Tabs value={categoryFilter} onValueChange={handleFilterChange}>
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="work">Work</TabsTrigger>
-                <TabsTrigger value="personal">Personal</TabsTrigger>
+              <TabsList className="h-9">
+                <TabsTrigger value="all" className="text-xs px-3">All</TabsTrigger>
+                <TabsTrigger value="work" className="text-xs px-3">Work</TabsTrigger>
+                <TabsTrigger value="personal" className="text-xs px-3">Personal</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-           {isClient ? (
-            <DndContext 
+
+          {/* Kanban Board */}
+          {isClient ? (
+            <DndContext
               sensors={sensors}
-              onDragStart={handleDragStart} 
-              onDragEnd={handleDragEnd} 
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
               onDragCancel={handleDragCancel}
             >
-              <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
-               <DragOverlay>
-                {activeTask ? <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay categoryFilter={categoryFilter} status={activeTask.status} /> : null}
+              <TaskBoard
+                statuses={statuses}
+                tasksByStatus={tasksByStatus}
+                onTaskUpdate={handleTaskUpdate}
+                onTaskDelete={handleTaskDelete}
+                onDeleteAllDone={handleDeleteAllDone}
+                categoryFilter={categoryFilter}
+              />
+              <DragOverlay>
+                {activeTask ? (
+                  <TaskCard task={activeTask} onTaskUpdate={handleTaskUpdate} isOverlay categoryFilter={categoryFilter} status={activeTask.status} />
+                ) : null}
               </DragOverlay>
             </DndContext>
           ) : (
-            <TaskBoard statuses={statuses} tasksByStatus={tasksByStatus} onTaskUpdate={handleTaskUpdate} onTaskDelete={handleTaskDelete} onDeleteAllDone={handleDeleteAllDone} categoryFilter={categoryFilter} />
+            <TaskBoard
+              statuses={statuses}
+              tasksByStatus={tasksByStatus}
+              onTaskUpdate={handleTaskUpdate}
+              onTaskDelete={handleTaskDelete}
+              onDeleteAllDone={handleDeleteAllDone}
+              categoryFilter={categoryFilter}
+            />
           )}
         </div>
       </div>
     </div>
   );
 }
-
-    

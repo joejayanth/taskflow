@@ -2,12 +2,13 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import type { Task, Status, Category } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
 import { TaskCard } from './task-card';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Button } from './ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Inbox } from 'lucide-react';
 import { TaskDialog } from './task-dialog';
 import { DoneColumnActions } from './done-column-actions';
 
@@ -20,20 +21,47 @@ interface TaskColumnProps {
   categoryFilter: Category | 'all';
 }
 
-const statusConfig: Record<Status, { color: string, title: string, bg: string }> = {
-  'Yet to Start': { color: 'bg-slate-400', title: 'To Do', bg: 'bg-slate-50/50' },
-  'WIP': { color: 'bg-blue-500', title: 'In Progress', bg: 'bg-blue-50/30' },
-  'In Review': { color: 'bg-amber-500', title: 'Review', bg: 'bg-amber-50/30' },
-  'Done': { color: 'bg-emerald-500', title: 'Completed', bg: 'bg-emerald-50/30' },
+const statusConfig: Record<Status, {
+  dot: string;
+  title: string;
+  bg: string;
+  stripe: string;
+  headerText: string;
+}> = {
+  'Yet to Start': {
+    dot: 'bg-slate-400',
+    title: 'To Do',
+    bg: 'bg-muted/20 dark:bg-muted/10',
+    stripe: 'bg-slate-400',
+    headerText: 'text-slate-600 dark:text-slate-400',
+  },
+  'WIP': {
+    dot: 'bg-violet-500',
+    title: 'In Progress',
+    bg: 'bg-violet-50/40 dark:bg-violet-950/20',
+    stripe: 'bg-violet-500',
+    headerText: 'text-violet-700 dark:text-violet-400',
+  },
+  'In Review': {
+    dot: 'bg-amber-500',
+    title: 'Review',
+    bg: 'bg-amber-50/40 dark:bg-amber-950/20',
+    stripe: 'bg-amber-500',
+    headerText: 'text-amber-700 dark:text-amber-400',
+  },
+  'Done': {
+    dot: 'bg-emerald-500',
+    title: 'Completed',
+    bg: 'bg-emerald-50/30 dark:bg-emerald-950/15',
+    stripe: 'bg-emerald-500',
+    headerText: 'text-emerald-700 dark:text-emerald-400',
+  },
 };
 
 export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDeleteAll, categoryFilter }: TaskColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: status,
-    data: {
-      type: 'Column',
-      status: status,
-    }
+    data: { type: 'Column', status }
   });
 
   const config = statusConfig[status];
@@ -43,16 +71,27 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col rounded-xl border border-border/60 transition-colors duration-200 h-full',
+        'flex flex-col rounded-xl border border-border/50 transition-all duration-200 overflow-hidden h-full',
         config.bg,
-        isOver ? 'ring-2 ring-primary ring-offset-2' : ''
+        isOver && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
       )}
     >
-      <div className="flex items-center justify-between gap-2 p-4 pb-2">
-        <div className="flex items-center gap-2.5">
-          <span className={cn('h-2 w-2 rounded-full', config.color)} />
-          <h2 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{config.title}</h2>
-          <Badge variant="secondary" className="font-bold bg-muted/60 text-[11px] px-1.5 h-5 min-w-[20px] flex justify-center">{tasks.length}</Badge>
+      {/* Top color stripe */}
+      <div className={cn('h-1 w-full', config.stripe)} />
+
+      {/* Column header */}
+      <div className="flex items-center justify-between gap-2 px-3.5 pt-3 pb-2">
+        <div className="flex items-center gap-2">
+          <span className={cn('h-2 w-2 rounded-full shrink-0', config.dot)} />
+          <h2 className={cn("font-bold text-xs uppercase tracking-widest", config.headerText)}>
+            {config.title}
+          </h2>
+          <Badge
+            variant="secondary"
+            className="font-bold text-[10px] px-1.5 h-4.5 min-w-[20px] flex justify-center bg-background/60 border border-border/40"
+          >
+            {tasks.length}
+          </Badge>
         </div>
         <div className="flex items-center gap-1">
           <TaskDialog
@@ -60,23 +99,39 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
             initialStatus={status}
             initialCategory={categoryFilter === 'all' ? 'work' : categoryFilter}
             trigger={
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted/80 rounded-full">
-                <Plus className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-7 w-7 p-0 hover:bg-background/60 rounded-lg">
+                <Plus className="h-3.5 w-3.5" />
                 <span className="sr-only">Add task to {config.title}</span>
               </Button>
             }
           />
-          {status === 'Done' && onDeleteAll && <DoneColumnActions tasks={tasks} onDeleteAll={onDeleteAll} />}
+          {status === 'Done' && onDeleteAll && (
+            <DoneColumnActions tasks={tasks} onDeleteAll={onDeleteAll} />
+          )}
         </div>
       </div>
+
+      {/* Task list */}
       <ScrollArea className="flex-1">
-        <div className="p-3 min-h-[400px]">
+        <div className="px-3 pb-3 min-h-[380px]">
           <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.length > 0 ? (
-              tasks.map(task => <TaskCard key={task.id} task={task} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} categoryFilter={categoryFilter} status={status} />)
+              tasks.map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onTaskUpdate={onTaskUpdate}
+                  onTaskDelete={onTaskDelete}
+                  categoryFilter={categoryFilter}
+                  status={status}
+                />
+              ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-muted/40 opacity-40">
-                <p className="text-xs font-semibold uppercase tracking-widest">No Tasks</p>
+              <div className="flex flex-col items-center justify-center gap-2 py-14 rounded-xl border-2 border-dashed border-muted/50 mt-1 opacity-40">
+                <Inbox className="h-5 w-5 text-muted-foreground" />
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  No Tasks
+                </p>
               </div>
             )}
           </SortableContext>
@@ -85,5 +140,3 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
     </div>
   );
 }
-
-import { Badge } from './ui/badge';
