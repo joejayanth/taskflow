@@ -50,9 +50,9 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
 
   if (isDone) {
     return (
-      <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-2", isOverlay && "ring-2 ring-primary z-50 rounded-lg")}>
+      <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-2 w-full", isOverlay && "ring-2 ring-primary z-50 rounded-lg")}>
         <Card className={cn(
-          "hover:shadow-sm transition-all duration-200 group rounded-lg border bg-card/40",
+          "w-full hover:shadow-sm transition-all duration-200 group rounded-lg border bg-card/40",
           isDragging && "opacity-40"
         )}>
           <div className="flex items-center gap-2 px-3 py-2.5">
@@ -83,9 +83,9 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
     : null;
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-2.5", isOverlay && "ring-2 ring-primary z-50 rounded-xl")}>
+    <div ref={setNodeRef} style={style} {...attributes} className={cn("mb-2.5 w-full", isOverlay && "ring-2 ring-primary z-50 rounded-xl")}>
       <Card className={cn(
-        "hover:shadow-md transition-all duration-200 group rounded-xl border overflow-hidden",
+        "w-full hover:shadow-md transition-all duration-200 group rounded-xl border",
         priorityBorderClass[task.priority],
         isDragging && "opacity-40",
         task.blocked && "border-destructive/40 bg-destructive/5"
@@ -93,7 +93,7 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
         <CardHeader className="p-3 pb-1.5">
           <div className="flex items-start justify-between gap-2">
             <TaskDialog onSave={onTaskUpdate} onDelete={onTaskDelete} task={task} trigger={
-              <CardTitle className="text-[14px] font-semibold leading-snug cursor-pointer hover:text-primary transition-colors flex-1">
+              <CardTitle className="text-[14px] font-semibold leading-snug cursor-pointer hover:text-primary transition-colors flex-1 min-w-0 break-words">
                 {task.title}
               </CardTitle>
             } />
@@ -113,7 +113,7 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
           {/* Description snippet */}
           {descriptionSnippet && (
             <TaskDialog onSave={onTaskUpdate} onDelete={onTaskDelete} task={task} trigger={
-              <p className="text-[12px] text-muted-foreground/70 leading-relaxed cursor-pointer line-clamp-2">
+              <p className="text-[12px] text-muted-foreground/70 leading-relaxed cursor-pointer line-clamp-2 break-all">
                 {descriptionSnippet}
               </p>
             } />
