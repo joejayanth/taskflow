@@ -108,7 +108,7 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
                     <div className="group cursor-pointer rounded-lg px-2.5 py-2 transition-colors hover:bg-primary/8 flex items-center gap-3">
                       {/* Priority chip */}
                       <span className={cn(
-                        "hidden sm:flex items-center gap-1 shrink-0 rounded-md border px-1.5 py-0.5 text-[20px] font-bold uppercase tracking-wider",
+                        "hidden sm:flex items-center gap-1 shrink-0 rounded-md border px-1.5 py-0.5 text-[15px] font-bold uppercase tracking-wider",
                         priorityChipClass[task.priority]
                       )}>
                         <PriorityIcon priority={task.priority} className="h-2.5 w-2.5" />
@@ -116,7 +116,7 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
                       </span>
 
                       {/* Title */}
-                      <h3 className="flex-1 text-[26px] font-semibold truncate group-hover:text-primary transition-colors">
+                      <h3 className="flex-1 text-[20px] font-semibold truncate group-hover:text-primary transition-colors">
                         {task.title}
                       </h3>
 
@@ -125,13 +125,13 @@ export function FocusRecommendation({ tasks, onTaskUpdate, onTaskDelete }: Focus
                         <Badge
                           variant="outline"
                           className={cn(
-                            "h-[36px] text-[20px] font-bold uppercase tracking-wider px-1.5 rounded-md hidden md:flex",
+                            "h-[27px] text-[15px] font-bold uppercase tracking-wider px-1.5 rounded-md hidden md:flex",
                             statusBadgeClass[task.status] || 'border-transparent'
                           )}
                         >
                           {task.status === 'Yet to Start' ? 'To Do' : task.status === 'WIP' ? 'WIP' : 'Review'}
                         </Badge>
-                        <span className="text-[22px] font-medium text-muted-foreground tabular-nums">
+                        <span className="text-[17px] font-medium text-muted-foreground tabular-nums">
                           {format(new Date(task.dueDate), "MMM d")}
                         </span>
                       </div>
