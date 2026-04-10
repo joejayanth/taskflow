@@ -123,7 +123,7 @@ export default function LoginPage() {
           </Button>
         </div>
 
-        <p className="text-center text-[11px] text-muted-foreground/60 leading-relaxed">
+        <p className="text-center text-[22px] text-muted-foreground/60 leading-relaxed">
           Your tasks are securely stored and private to your account.
         </p>
       </div>

@@ -93,7 +93,7 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
         <CardHeader className="p-3 pb-1.5">
           <div className="flex items-start justify-between gap-2">
             <TaskDialog onSave={onTaskUpdate} onDelete={onTaskDelete} task={task} trigger={
-              <CardTitle className="text-[14px] font-semibold leading-snug cursor-pointer hover:text-primary transition-colors flex-1 min-w-0 break-words">
+              <CardTitle className="text-[28px] font-semibold leading-snug cursor-pointer hover:text-primary transition-colors flex-1 min-w-0 break-words">
                 {task.title}
               </CardTitle>
             } />
@@ -113,13 +113,13 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
           {/* Description snippet */}
           {descriptionSnippet && (
             <TaskDialog onSave={onTaskUpdate} onDelete={onTaskDelete} task={task} trigger={
-              <p className="text-[12px] text-muted-foreground/70 leading-relaxed cursor-pointer line-clamp-2 break-all">
+              <p className="text-[24px] text-muted-foreground/70 leading-relaxed cursor-pointer line-clamp-2 break-all">
                 {descriptionSnippet}
               </p>
             } />
           )}
 
-          <div className="flex items-center justify-between text-[12px]">
+          <div className="flex items-center justify-between text-[24px]">
             <div className="flex items-center gap-1 text-muted-foreground font-medium">
               <PriorityIcon priority={task.priority} className="h-3.5 w-3.5" />
               <span>{getPriorityLabel(task.priority)}</span>
@@ -133,7 +133,7 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
               <Badge
                 variant={isOverdue ? 'destructive' : 'outline'}
                 className={cn(
-                  "font-semibold py-0 px-1.5 h-[18px] text-[10px] uppercase tracking-wider rounded-md",
+                  "font-semibold py-0 px-1.5 h-[36px] text-[20px] uppercase tracking-wider rounded-md",
                   !isOverdue && "bg-muted/60 border-transparent text-muted-foreground"
                 )}
               >
@@ -143,7 +143,7 @@ export function TaskCard({ task, onTaskUpdate, onTaskDelete, isOverlay, category
           </div>
 
           {task.blocked && (
-            <div className="flex items-center gap-1 text-destructive font-semibold text-[10px] uppercase tracking-wider">
+            <div className="flex items-center gap-1 text-destructive font-semibold text-[20px] uppercase tracking-wider">
               <ShieldAlert className="h-3 w-3" />
               <span>Blocked</span>
             </div>

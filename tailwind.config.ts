@@ -14,6 +14,16 @@ export default {
         headline: ['"Nunito"', 'system-ui'],
         code: ['monospace'],
       },
+      fontSize: {
+        'xs':   ['24px', { lineHeight: '32px' }],
+        'sm':   ['28px', { lineHeight: '40px' }],
+        'base': ['32px', { lineHeight: '48px' }],
+        'lg':   ['36px', { lineHeight: '52px' }],
+        'xl':   ['40px', { lineHeight: '56px' }],
+        '2xl':  ['48px', { lineHeight: '64px' }],
+        '3xl':  ['60px', { lineHeight: '72px' }],
+        '4xl':  ['72px', { lineHeight: '80px' }],
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

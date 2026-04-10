@@ -87,7 +87,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
           </h2>
           <Badge
             variant="secondary"
-            className="font-bold text-[10px] px-1.5 min-w-[20px] flex justify-center bg-background/60 border border-border/40"
+            className="font-bold text-[20px] px-1.5 min-w-[20px] flex justify-center bg-background/60 border border-border/40"
           >
             {tasks.length}
           </Badge>
@@ -128,7 +128,7 @@ export function TaskColumn({ status, tasks, onTaskUpdate, onTaskDelete, onDelete
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 py-14 rounded-xl border-2 border-dashed border-muted/50 opacity-40">
                 <Inbox className="h-5 w-5 text-muted-foreground" />
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <p className="text-[22px] font-semibold uppercase tracking-widest text-muted-foreground">
                   No Tasks
                 </p>
               </div>
